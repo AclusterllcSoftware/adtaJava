@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn" name="ADTA" packages="aclusterllc.adta">
+
+  <Appenders>
+    <RollingFile name="CommonLogger" fileName="logs\\server.log"
+                 filePattern="logs\\$${date:yyyy-MM}\\server-%d{MM-dd-yyyy}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%d{yyyy-MM-dd HH:mm:ss:SSS} [%-5p] %c{1}:%L - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="10 MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="100"/>
+    </RollingFile>
+    <RollingFile name="ServerForIngram" fileName="logs\\ServerForIngram.log"
+                 filePattern="logs\\$${date:yyyy-MM}\\ServerForIngram-%d{MM-dd-yyyy}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%d{yyyy-MM-dd HH:mm:ss:SSS} [%-5p] %c{1}:%L - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="10 MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="100"/>
+    </RollingFile>
+    <RollingFile name="DatabaseHandler" fileName="logs\\DatabaseHandler.log"
+                 filePattern="logs\\$${date:yyyy-MM}\\DatabaseHandler-%d{MM-dd-yyyy}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%d{yyyy-MM-dd HH:mm:ss:SSS} [%-5p] %c{1}:%L - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="10 MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="100"/>
+    </RollingFile>
+    <RollingFile name="Scheduler" fileName="logs\\Scheduler.log"
+                 filePattern="logs\\$${date:yyyy-MM}\\Scheduler-%d{MM-dd-yyyy}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%d{yyyy-MM-dd HH:mm:ss:SSS} [%-5p] %c{1}:%L - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="10 MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="100"/>
+    </RollingFile>
+    <RollingFile name="ThreeSixtyClient" fileName="logs\\ThreeSixtyClient.log"
+                 filePattern="logs\\$${date:yyyy-MM}\\ThreeSixtyClient-%d{MM-dd-yyyy}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%d{yyyy-MM-dd HH:mm:ss:SSS} [%-5p] %c{1}:%L - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="10 MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="100"/>
+    </RollingFile>
+    <RollingFile name="ThreeSixtyServer" fileName="logs\\ThreeSixtyServer.log"
+                 filePattern="logs\\$${date:yyyy-MM}\\ThreeSixtyServer-%d{MM-dd-yyyy}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%d{yyyy-MM-dd HH:mm:ss:SSS} [%-5p] %c{1}:%L - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="10 MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="100"/>
+    </RollingFile>
+    <RollingFile name="MessageHandler" fileName="logs\\MessageHandler.log"
+                 filePattern="logs\\$${date:yyyy-MM}\\MessageHandler-%d{MM-dd-yyyy}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%d{yyyy-MM-dd HH:mm:ss:SSS} [%-5p] %c{1}:%L - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="10 MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="100"/>
+    </RollingFile>
+  </Appenders>
+  <Loggers>
+    <Logger name="aclusterllc.adta.ThreeSixtyClient" level="info" additivity="false">
+      <AppenderRef ref="ThreeSixtyClient"/>
+    </Logger>
+    <Logger name="aclusterllc.adta.ThreeSixtyServer" level="info" additivity="false">
+      <AppenderRef ref="ThreeSixtyServer"/>
+    </Logger>
+    <Logger name="aclusterllc.adta.ServerForIngram" level="info" additivity="false">
+      <AppenderRef ref="ServerForIngram"/>
+    </Logger>
+    <Logger name="aclusterllc.adta.DatabaseHandler" level="info" additivity="false">
+      <AppenderRef ref="DatabaseHandler"/>
+    </Logger>
+    <Logger name="aclusterllc.adta.Scheduler" level="info" additivity="false">
+      <AppenderRef ref="Scheduler"/>
+    </Logger>
+    <Logger name="aclusterllc.adta.MessageHandler" level="info" additivity="false">
+      <AppenderRef ref="MessageHandler"/>
+    </Logger>
+    <Logger name="com.zaxxer" level="error"/>
+    <Root level="info">
+      <AppenderRef ref="CommonLogger"/>
+    </Root>
+  </Loggers>
+</Configuration>
