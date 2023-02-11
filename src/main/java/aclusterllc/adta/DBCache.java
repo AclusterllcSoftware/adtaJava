@@ -1,5 +1,7 @@
 package aclusterllc.adta;
 
+import org.apache.logging.log4j.core.config.json.JsonConfiguration;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +47,11 @@ public class DBCache {
     private static Logger logger=LoggerFactory.getLogger(DBCache.class);
     public static final Map<String, String> estop_locations = new HashMap<>();
 
-
+    public static final JSONObject alarmInfo = new JSONObject();
+    public static final JSONObject binsInfo = new JSONObject();
+    public static final JSONObject conveyorsInfo = new JSONObject();
+    public static final JSONObject devicesInfo = new JSONObject();
+    public static final JSONObject inputsInfo = new JSONObject();
     private DBCache(){
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -79,6 +85,7 @@ public class DBCache {
             {
                 Map<String, String> singleAlarmData = new HashMap<>();
 
+
                 String comboId = format("%d%d%d", rs.getInt("machine_id"), rs.getInt("alarm_id"), rs.getInt("alarm_type"));
                 singleAlarmData.put("alarm_id", Integer.toString(rs.getInt("alarm_id")));
                 singleAlarmData.put("machine_id", Integer.toString(rs.getInt("machine_id")));
@@ -91,6 +98,18 @@ public class DBCache {
 
                 alarmData.put(comboId, singleAlarmData);
 
+                JSONObject item=new JSONObject();
+                item.put("id",rs.getString("id"));
+                item.put("alarm_id",rs.getString("alarm_id"));
+                item.put("machine_id",rs.getString("machine_id"));
+                item.put("alarm_type",rs.getString("alarm_type"));
+                item.put("alarm_class",rs.getString("alarm_class"));
+                item.put("description",rs.getString("description"));
+                item.put("location",rs.getString("location"));
+                item.put("variable_name",rs.getString("variable_name"));
+                item.put("gui_alarm_id",rs.getString("gui_alarm_id"));
+                alarmInfo.put(rs.getString("machine_id")+"_"+rs.getString("alarm_id")+"_"+rs.getString("alarm_type"),item);
+
                 if (!machineAlarms.containsKey(rs.getInt("machine_id"))) {
                     machineAlarms.put(rs.getInt("machine_id"), new HashMap<>());
                 }
@@ -102,8 +121,7 @@ public class DBCache {
 
                 machineAlarms.get(rs.getInt("machine_id")).get(rs.getInt("alarm_type")).add(rs.getInt("alarm_id"));
             }
-
-            String binsQuery = "SELECT bin_id, machine_id, gui_bin_id FROM bins WHERE 1";
+            String binsQuery = "SELECT * FROM bins WHERE 1";
             rs = stmt.executeQuery(binsQuery);
             while (rs.next())
             {
@@ -120,9 +138,75 @@ public class DBCache {
                 if (!binData.get(rs.getInt("machine_id")).containsKey(rs.getInt("bin_id"))) {
                     binData.get(rs.getInt("machine_id")).put(rs.getInt("bin_id"), rs.getInt("gui_bin_id"));
                 }
+                JSONObject item=new JSONObject();
+                item.put("id",rs.getString("id"));
+                item.put("bin_id",rs.getString("bin_id"));
+                item.put("machine_id",rs.getString("machine_id"));
+                item.put("bin_label",rs.getString("bin_label"));
+                item.put("sort_manager_id",rs.getString("sort_manager_id"));
+                item.put("description",rs.getString("description"));
+                item.put("gui_bin_id",rs.getString("gui_bin_id"));
+                binsInfo.put(rs.getString("machine_id")+"_"+rs.getString("bin_id"),item);
             }
 
-            String inputsQuery = "SELECT input_id, machine_id, gui_input_id, input_type, active_state, enable_history, description, device_type FROM inputs WHERE 1";
+            String conveyorQuery = "SELECT * FROM conveyors WHERE 1";
+            rs = stmt.executeQuery(conveyorQuery);
+            while (rs.next())
+            {
+                if (!machineConveyors.containsKey(rs.getInt("machine_id"))) {
+                    machineConveyors.put(rs.getInt("machine_id"), new ArrayList<>());
+                }
+
+                machineConveyors.get(rs.getInt("machine_id")).add(rs.getInt("conveyor_id"));
+
+                if (!conveyorData.containsKey(rs.getInt("machine_id"))) {
+                    conveyorData.put(rs.getInt("machine_id"), new HashMap<>());
+                }
+
+                if (!conveyorData.get(rs.getInt("machine_id")).containsKey(rs.getInt("conveyor_id"))) {
+                    conveyorData.get(rs.getInt("machine_id")).put(rs.getInt("conveyor_id"), rs.getInt("gui_conveyor_id"));
+                }
+                JSONObject item=new JSONObject();
+                item.put("id",rs.getString("id"));
+                item.put("conveyor_id",rs.getString("conveyor_id"));
+                item.put("machine_id",rs.getString("machine_id"));
+                item.put("conveyor_type",rs.getString("conveyor_type"));
+                item.put("conveyor_name",rs.getString("conveyor_name"));
+                item.put("conveyor_tag_name",rs.getString("conveyor_tag_name"));
+                item.put("gui_conveyor_id",rs.getString("gui_conveyor_id"));
+                conveyorsInfo.put(rs.getString("machine_id")+"_"+rs.getString("conveyor_id")+"_"+rs.getString("conveyor_type"),item);
+            }
+
+            String devicesQuery = "SELECT * FROM devices WHERE 1";
+            rs = stmt.executeQuery(devicesQuery);
+            while (rs.next())
+            {
+                if (!machineDevices.containsKey(rs.getInt("machine_id"))) {
+                    machineDevices.put(rs.getInt("machine_id"), new ArrayList<>());
+                }
+
+                machineDevices.get(rs.getInt("machine_id")).add(rs.getInt("device_id"));
+
+                if (!deviceData.containsKey(rs.getInt("machine_id"))) {
+                    deviceData.put(rs.getInt("machine_id"), new HashMap<>());
+                }
+
+                if (!deviceData.get(rs.getInt("machine_id")).containsKey(rs.getInt("device_id"))) {
+                    deviceData.get(rs.getInt("machine_id")).put(rs.getInt("device_id"), rs.getInt("gui_device_id"));
+                }
+                JSONObject item=new JSONObject();
+                item.put("id",rs.getString("id"));
+                item.put("device_id",rs.getString("device_id"));
+                item.put("machine_id",rs.getString("machine_id"));
+                item.put("device_type",rs.getString("device_type"));
+                item.put("device_name",rs.getString("device_name"));
+                item.put("gui_device_id",rs.getString("gui_device_id"));
+                devicesInfo.put(rs.getString("machine_id")+"_"+rs.getString("device_id")+"_"+rs.getString("device_type"),item);
+
+            }
+
+
+            String inputsQuery = "SELECT * FROM inputs WHERE 1";
             rs = stmt.executeQuery(inputsQuery);
             while (rs.next())
             {
@@ -177,6 +261,21 @@ public class DBCache {
                 if (!inputActiveStates.get(rs.getInt("machine_id")).containsKey(rs.getInt("input_id"))) {
                     inputActiveStates.get(rs.getInt("machine_id")).put(rs.getInt("device_number"), rs.getInt("device_number"));
                 }*/
+                JSONObject item=new JSONObject();
+                item.put("id",rs.getString("id"));
+                item.put("input_id",rs.getString("input_id"));
+                item.put("machine_id",rs.getString("machine_id"));
+                item.put("active_state",rs.getString("active_state"));
+                item.put("input_type",rs.getString("input_type"));
+                item.put("input_name",rs.getString("input_name"));
+                item.put("electrical_name",rs.getString("electrical_name"));
+                item.put("gui_input_id",rs.getString("gui_input_id"));
+                item.put("description",rs.getString("description"));
+                item.put("enable_history",rs.getString("enable_history"));
+                item.put("device_type",rs.getString("device_type"));
+                item.put("device_number",rs.getString("device_number"));
+                inputsInfo.put(rs.getString("machine_id")+"_"+rs.getString("input_id")+"_"+rs.getString("input_type"),item);
+
             }
 
             String productHistoryIdQuery = format("SELECT product_id FROM %s WHERE 1 ORDER BY product_id DESC LIMIT 1", "product_history");
@@ -205,44 +304,6 @@ public class DBCache {
             {
                 //existingProducts.add(productRes.getLong("mail_id"));
                 mailIdtoSQLId.put(productRes.getLong("mail_id"), productRes.getLong("id"));
-            }
-
-            String devicesQuery = "SELECT device_id, machine_id, gui_device_id FROM devices WHERE 1";
-            rs = stmt.executeQuery(devicesQuery);
-            while (rs.next())
-            {
-                if (!machineDevices.containsKey(rs.getInt("machine_id"))) {
-                    machineDevices.put(rs.getInt("machine_id"), new ArrayList<>());
-                }
-
-                machineDevices.get(rs.getInt("machine_id")).add(rs.getInt("device_id"));
-
-                if (!deviceData.containsKey(rs.getInt("machine_id"))) {
-                    deviceData.put(rs.getInt("machine_id"), new HashMap<>());
-                }
-
-                if (!deviceData.get(rs.getInt("machine_id")).containsKey(rs.getInt("device_id"))) {
-                    deviceData.get(rs.getInt("machine_id")).put(rs.getInt("device_id"), rs.getInt("gui_device_id"));
-                }
-            }
-
-            String conveyorQuery = "SELECT conveyor_id, machine_id, gui_conveyor_id FROM conveyors WHERE 1";
-            rs = stmt.executeQuery(conveyorQuery);
-            while (rs.next())
-            {
-                if (!machineConveyors.containsKey(rs.getInt("machine_id"))) {
-                    machineConveyors.put(rs.getInt("machine_id"), new ArrayList<>());
-                }
-
-                machineConveyors.get(rs.getInt("machine_id")).add(rs.getInt("conveyor_id"));
-
-                if (!conveyorData.containsKey(rs.getInt("machine_id"))) {
-                    conveyorData.put(rs.getInt("machine_id"), new HashMap<>());
-                }
-
-                if (!conveyorData.get(rs.getInt("machine_id")).containsKey(rs.getInt("conveyor_id"))) {
-                    conveyorData.get(rs.getInt("machine_id")).put(rs.getInt("conveyor_id"), rs.getInt("gui_conveyor_id"));
-                }
             }
 
             String inductQuery = "SELECT induct_id, machine_id, gui_induct_id FROM inducts WHERE 1";
@@ -313,62 +374,6 @@ public class DBCache {
                 singleMachine.put("maintenance_ip", rs.getString("maintenance_gui_ip"));
 
                 machineList.put(rs.getInt("machine_id"), singleMachine);
-
-                int machineId = rs.getInt("machine_id");
-                String statisticsTbl = "statistics";
-                boolean doManualStatsInsertion = false;
-                Statement stmt2 = dbConn.createStatement();
-
-                String statisticsSyncQuery = format("SELECT created_at FROM %s WHERE machine_id=%d ORDER BY id DESC LIMIT 1", statisticsTbl, machineId);
-                ResultSet rs2 = stmt2.executeQuery(statisticsSyncQuery);
-
-                if(rs2.next()) {
-                    String createdAt = rs2.getTimestamp("created_at").toString();
-                    Date createdAtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(createdAt);
-                    Date nowDate = new Date();
-                    long duration = getDuration(createdAtDate, nowDate, TimeUnit.SECONDS);
-
-                    if(duration > 300) {
-                        doManualStatsInsertion = true;
-                    }
-                } else {
-                    doManualStatsInsertion = true;
-                }
-
-
-                if(doManualStatsInsertion) {
-                    String datePart1 = new java.text.SimpleDateFormat("yyyy-MM-dd HH:").format(Calendar.getInstance().getTime());
-
-                    String datePart2 = new java.text.SimpleDateFormat("mm").format(Calendar.getInstance().getTime());
-                    int datePart2toInt = Integer.parseInt(datePart2);
-
-                    int newMinutes;
-                    int minuteRemainder = datePart2toInt % 10;
-                    if(minuteRemainder > 4) {
-                        newMinutes = floorDiv(datePart2toInt, 10) * 10 + 5;
-                    } else {
-                        newMinutes = floorDiv(datePart2toInt, 10) * 10;
-                    }
-
-                    String newMinutesStr = String.format("%d", newMinutes);
-
-                    if(newMinutes < 10) {
-                        newMinutesStr = "0" + newMinutesStr;
-                    }
-
-                    String datePart3 = ":00";
-
-                    String manualDate = datePart1 + newMinutesStr + datePart3;
-                    String statsInsertQuery = format("INSERT IGNORE INTO statistics (machine_id, created_at) VALUES(%d, '%s')", machineId, manualDate);
-                    //Have to check about autocommit false, true
-                    dbConn.setAutoCommit(false);
-                    stmt2.execute(statsInsertQuery);
-                    dbConn.commit();
-                    dbConn.setAutoCommit(true);
-                }
-
-                rs2.close();
-                stmt2.close();
             }
             String estopLocationQuery = "SELECT combo_id, name FROM estop_locations WHERE 1";
             rs = stmt.executeQuery(estopLocationQuery);
@@ -376,6 +381,59 @@ public class DBCache {
             {
                 estop_locations.put(rs.getString("combo_id"),rs.getString("name"));
             }
+            String statisticsTbl = "statistics";
+            boolean insertRow = false;
+            Statement stmt2 = dbConn.createStatement();
+            //inserting statistics tables initial row
+            String event_5min_Query = format("SELECT created_at FROM %s ORDER BY id DESC LIMIT 1", statisticsTbl);
+            ResultSet rs2 = stmt2.executeQuery(event_5min_Query);
+            if(rs2.next()) {
+                String createdAt = rs2.getTimestamp("created_at").toString();
+                Date createdAtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(createdAt);
+                Date nowDate = new Date();
+                long duration = getDuration(createdAtDate, nowDate, TimeUnit.SECONDS);
+                if(duration > 300) {
+                    insertRow = true;
+                }
+            }
+            else {
+                insertRow = true;
+            }
+            String insertQuery5min="";
+            //let assume for both bins and statistics minutes
+            if(insertRow){
+                insertQuery5min= "INSERT IGNORE INTO statistics (machine_id) SELECT DISTINCT machine_id FROM machines;INSERT IGNORE INTO statistics_bins (machine_id,bin_id) SELECT DISTINCT machine_id,bin_id FROM bins;";
+            }
+
+            insertRow = false;
+            //inserting statistics tables initial row
+            String event_hourly_Query = format("SELECT created_at FROM %s ORDER BY id DESC LIMIT 1", statisticsTbl);
+            rs2 = stmt2.executeQuery(event_hourly_Query);
+            if(rs2.next()) {
+                String createdAt = rs2.getTimestamp("created_at").toString();
+                Date createdAtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(createdAt);
+                Date nowDate = new Date();
+                long duration = getDuration(createdAtDate, nowDate, TimeUnit.SECONDS);
+                if(duration > 3600) {
+                    insertRow = true;
+                }
+            }
+            else {
+                insertRow = true;
+            }
+            String insertQueryHourly="";
+            if(insertRow){
+                insertQueryHourly= "INSERT IGNORE INTO statistics_hourly (machine_id) SELECT DISTINCT machine_id FROM machines;INSERT IGNORE INTO statistics_bins_hourly (machine_id,bin_id) SELECT DISTINCT machine_id,bin_id FROM bins;";
+            }
+            String insertStatQuery=insertQuery5min+insertQueryHourly;
+            insertStatQuery+="INSERT IGNORE INTO statistics_counter (machine_id) SELECT DISTINCT machine_id FROM machines;INSERT IGNORE INTO statistics_bins_counter (machine_id,bin_id) SELECT DISTINCT machine_id,bin_id FROM bins;";
+            dbConn.setAutoCommit(false);
+            stmt2.execute(insertStatQuery);
+            dbConn.commit();
+            dbConn.setAutoCommit(true);
+
+            rs2.close();
+            stmt2.close();
 
             rs.close();
             stmt.close();

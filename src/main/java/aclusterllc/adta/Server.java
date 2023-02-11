@@ -177,6 +177,7 @@ public class Server implements Runnable {
         buffer.get(b);
 
         String bufferToString = new String( b, StandardCharsets.UTF_8 );
+        //System.out.println(bufferToString);
         while (bufferToString.length()>0){
             //System.out.println(bufferToString);
             if(bufferToString.charAt(0)=='{'){
@@ -226,7 +227,22 @@ public class Server implements Runnable {
 
     public void processClientRequest(String clientName, JSONObject jsonObject) throws ParseException {
         String req = jsonObject.get("req").toString();
+        //System.out.println(req);
         switch (req) {
+            case "basic_info": {
+                JSONObject basic_info = new JSONObject();
+                basic_info.put("alarmInfo",DBCache.alarmInfo);
+                basic_info.put("binsInfo",DBCache.binsInfo);
+                basic_info.put("conveyorsInfo",DBCache.conveyorsInfo);
+                basic_info.put("devicesInfo",DBCache.devicesInfo);
+                basic_info.put("inputsInfo",DBCache.inputsInfo);
+
+                JSONObject response = new JSONObject();
+                response.put("type","basic_info");
+                response.put("basic_info",basic_info);
+                sendMessage(clientName, response.toString());
+                break;
+            }
             case "send_ip_list": {
                 JSONObject response = serverDBHandler.getMachineList();
                 sendMessage(clientName, response.toString());
