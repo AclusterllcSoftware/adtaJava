@@ -645,16 +645,29 @@ public class DatabaseWrapper {
 
         String tbl2 = "statistics";
 
-        String sql2 = format("UPDATE %s SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
+        String sql21 = format("UPDATE %s SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
                 tbl2,
                 no_read,
                 no_code,
                 multiple_read,
                 valid_read,
                 machineId);
+        String sql22 = format("UPDATE %s SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
+                "statistics_hourly",
+                no_read,
+                no_code,
+                multiple_read,
+                valid_read,
+                machineId);
+        String sql23 = format("UPDATE %s SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
+                "statistics_counter",
+                no_read,
+                no_code,
+                multiple_read,
+                valid_read,
+                machineId);
 
-
-        String bigQuery = sql1+sql2;
+        String bigQuery = sql1+sql21+sql22+sql23;
 
         dbHandler.append(bigQuery);
         return true;
@@ -662,7 +675,7 @@ public class DatabaseWrapper {
 
     public boolean processConfirmDestination(long mailId, int destination, int altDestination, int finalDestination, int reason, int machineId) {
         //1, 2, 3, 4, 5
-        List<Integer> possibleReasons=new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5));
+        List<Integer> possibleReasons=new ArrayList<>(Arrays.asList(0, 1, 3, 4, 5,6,7,8,9,10,12,14,16,17,18,21));
         //int machineId = 1;
         String sql0 = "";
         String tbl_ingram_products = "ingram_products";
@@ -732,22 +745,53 @@ public class DatabaseWrapper {
 
         String sql2 = format("DELETE FROM %s WHERE machine_id=%d AND mail_id=%d LIMIT 1;", tbl, machineId, mailId);
 
-        String sql3 = "";
+        String sql31 = "";
+        String sql32 = "";
+        String sql33 = "";
+        String sql41 = "";
+        String sql42 = "";
+        String sql43 = "";
         String tbl2 = "statistics";
 
         if(possibleReasons.contains(reason)) {
             String columnName = "sc" + Integer.toString(reason);
 
-            sql3 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
+            sql31 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
                     tbl2,
                     columnName,
                     columnName,
                     machineId);
+            sql32 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
+                    "statistics_hourly",
+                    columnName,
+                    columnName,
+                    machineId);
+            sql33 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
+                    "statistics_counter",
+                    columnName,
+                    columnName,
+                    machineId);
+            sql41 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d AND bin_id=%d ORDER BY id DESC LIMIT 1;",
+                    "statistics_bins",
+                    columnName,
+                    columnName,
+                    machineId,
+                    destination);
+            sql42 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d AND bin_id=%d ORDER BY id DESC LIMIT 1;",
+                    "statistics_bins_hourly",
+                    columnName,
+                    columnName,
+                    machineId,
+                    destination);
+            sql43 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d AND bin_id=%d ORDER BY id DESC LIMIT 1;",
+                    "statistics_bins_counter",
+                    columnName,
+                    columnName,
+                    machineId,
+                    destination);
         }
 
-
-
-        String bigQuery = sql0+sql1+sql2+sql3;
+        String bigQuery = sql0+sql1+sql2+sql31+sql32+sql33+sql41+sql42+sql43;
 
         dbHandler.append(bigQuery);
 
@@ -772,21 +816,32 @@ public class DatabaseWrapper {
 
     public boolean processPieceInducted(int inductId, int machineId) {
         List<Integer> inducts =new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7));
-        String sql = "";
+        String sql11 = "";
+        String sql12 = "";
+        String sql13 = "";
         String tbl = "statistics";
 
         if(inducts.contains(inductId)) {
             String columnName = "i" + Integer.toString(inductId);
 
-            sql = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
+            sql11 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
                     tbl,
                     columnName,
                     columnName,
                     machineId);
+            sql12 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
+                    "statistics_hourly",
+                    columnName,
+                    columnName,
+                    machineId);
+            sql13 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
+                    "statistics_counter",
+                    columnName,
+                    columnName,
+                    machineId);
         }
-
-        dbHandler.append(sql);
-
+        String bigQuery = sql11+sql12+sql13;
+        dbHandler.append(bigQuery);
         return true;
     }
 }
