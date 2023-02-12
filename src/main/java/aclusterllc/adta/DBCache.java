@@ -52,6 +52,8 @@ public class DBCache {
     public static final JSONObject conveyorsInfo = new JSONObject();
     public static final JSONObject devicesInfo = new JSONObject();
     public static final JSONObject inputsInfo = new JSONObject();
+    public static final JSONObject scsInfo = new JSONObject();
+
     private DBCache(){
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -278,6 +280,17 @@ public class DBCache {
 
             }
 
+            String scsQuery = "SELECT * FROM scs WHERE 1";
+            rs = stmt.executeQuery(scsQuery);
+            while (rs.next())
+            {
+                JSONObject item=new JSONObject();
+                item.put("id",rs.getString("id"));
+                item.put("value",rs.getString("value"));
+                item.put("label",rs.getString("label"));
+                item.put("color",rs.getString("color"));
+                scsInfo.put(rs.getString("value"),item);
+            }
             String productHistoryIdQuery = format("SELECT product_id FROM %s WHERE 1 ORDER BY product_id DESC LIMIT 1", "product_history");
             ResultSet phidRes = stmt.executeQuery(productHistoryIdQuery);
             long product_history_id = 0;

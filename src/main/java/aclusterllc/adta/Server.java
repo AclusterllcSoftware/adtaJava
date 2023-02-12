@@ -236,6 +236,7 @@ public class Server implements Runnable {
                 basic_info.put("conveyorsInfo",DBCache.conveyorsInfo);
                 basic_info.put("devicesInfo",DBCache.devicesInfo);
                 basic_info.put("inputsInfo",DBCache.inputsInfo);
+                basic_info.put("scsInfo",DBCache.scsInfo);
 
                 JSONObject response = new JSONObject();
                 response.put("type","basic_info");
