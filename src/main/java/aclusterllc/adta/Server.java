@@ -250,6 +250,28 @@ public class Server implements Runnable {
 
                 break;
             }
+            case "getStatistics": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                long from_timestamp = Long.parseLong(jsonObject.get("from_timestamp").toString());
+                long to_timestamp = Long.parseLong(jsonObject.get("to_timestamp").toString());
+                JSONObject response=new JSONObject();
+                response.put("type","getStatistics");
+                response.put("machineId",machineId);
+                response.put("statistics",serverDBHandler.getStatistics(machineId,from_timestamp,to_timestamp));
+                sendMessage(clientName, response.toString());
+                break;
+            }
+            case "getStatisticsHourly": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                long from_timestamp = Long.parseLong(jsonObject.get("from_timestamp").toString());
+                long to_timestamp = Long.parseLong(jsonObject.get("to_timestamp").toString());
+                JSONObject response=new JSONObject();
+                response.put("type","getStatisticsHourly");
+                response.put("machineId",machineId);
+                response.put("statistics",serverDBHandler.getStatisticsHourly(machineId,from_timestamp,to_timestamp));
+                sendMessage(clientName, response.toString());
+                break;
+            }
             case "general_view": {
                 int machineId = Integer.parseInt(jsonObject.get("id").toString());
                 //System.out.println("Machine:" + machineId);
