@@ -272,11 +272,12 @@ public class Server implements Runnable {
                 sendMessage(clientName, response.toString());
                 break;
             }
-            case "general_view": {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                //System.out.println("Machine:" + machineId);
-                JSONObject response = serverDBHandler.getGeneralView(machineId);
-                //System.out.println(response);
+            case "getGeneralViewData": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                JSONObject response=new JSONObject();
+                response.put("type","getGeneralViewData");
+                response.put("machineId",machineId);
+                response.put("test","shaiful");
                 sendMessage(clientName, response.toString());
                 break;
             }
