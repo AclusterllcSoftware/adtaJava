@@ -1509,4 +1509,24 @@ public class ServerDBHandler {
         }
         return statisticsJson;
     }
+    public JSONObject getBinStates(int machineId){
+        JSONObject binStates = new JSONObject();
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String query = String.format("SELECT bin_id, event_type FROM bin_states WHERE machine_id=%d ORDER BY event_type ASC", machineId);
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next())
+            {
+                binStates.put(rs.getString("bin_id"),rs.getInt("event_type"));
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return binStates;
+    }
 }

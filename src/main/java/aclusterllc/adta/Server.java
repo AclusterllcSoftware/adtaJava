@@ -277,7 +277,7 @@ public class Server implements Runnable {
                 JSONObject response=new JSONObject();
                 response.put("type","getGeneralViewData");
                 response.put("machineId",machineId);
-                response.put("test","shaiful");
+                response.put("binStates",serverDBHandler.getBinStates(machineId));
                 sendMessage(clientName, response.toString());
                 break;
             }
