@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -1528,5 +1529,33 @@ public class ServerDBHandler {
             logger.error(e.toString());
         }
         return binStates;
+    }
+    public JSONObject getBinInputsStates(int machineId,int sort_manager_id){
+        JSONObject binInputsStates = new JSONObject();
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String query = String.format("SELECT inputs.input_id,active_state,input_state FROM inputs LEFT JOIN input_states ON inputs.input_id=input_states.input_id WHERE inputs.machine_id=%d AND device_type=3 AND device_number=%d", machineId, sort_manager_id);
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next())
+            {
+                JSONObject row=new JSONObject();
+                int active_state=rs.getInt("active_state");
+                int input_state=(active_state==1?0:1);
+                if(rs.getString("input_state")!=null){
+                    input_state=rs.getInt("input_state");
+                }
+                row.put("active_state",active_state);
+                row.put("input_state",input_state);
+                binInputsStates.put(rs.getString("input_id"),row);
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return binInputsStates;
     }
 }

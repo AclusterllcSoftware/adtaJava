@@ -277,10 +277,21 @@ public class Server implements Runnable {
                 JSONObject response=new JSONObject();
                 response.put("type","getGeneralViewData");
                 response.put("machineId",machineId);
-                response.put("binStates",serverDBHandler.getBinStates(machineId));
+                response.put("binsStates",serverDBHandler.getBinStates(machineId));
                 sendMessage(clientName, response.toString());
                 break;
             }
+            case "getBinInputsState": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                int sort_manager_id = Integer.parseInt(jsonObject.get("sort_manager_id").toString());
+                JSONObject response=new JSONObject();
+                response.put("type","getBinInputsState");
+                response.put("machineId",machineId);
+                response.put("binInputsStates",serverDBHandler.getBinInputsStates(machineId,sort_manager_id));
+                sendMessage(clientName, response.toString());
+                break;
+            }
+            //--------------------------
             case "mod_sort": {
                 int machineId = Integer.parseInt(jsonObject.get("id").toString());
                 int device_type = Integer.parseInt(jsonObject.get("device_type").toString());
