@@ -1535,7 +1535,7 @@ public class ServerDBHandler {
         try {
             Connection dbConn = DataSource.getConnection();
             Statement stmt = dbConn.createStatement();
-            String query = String.format("SELECT inputs.input_id,active_state,input_state FROM inputs LEFT JOIN input_states ON inputs.input_id=input_states.input_id WHERE inputs.machine_id=%d AND device_type=3 AND device_number=%d", machineId, sort_manager_id);
+            String query = String.format("SELECT inputs.input_id,active_state,input_state FROM inputs LEFT JOIN input_states ON inputs.input_id=input_states.input_id WHERE inputs.machine_id=%d AND device_type=4 AND device_number=%d", machineId, sort_manager_id);
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next())
             {
