@@ -272,12 +272,57 @@ public class Server implements Runnable {
                 sendMessage(clientName, response.toString());
                 break;
             }
+            case "getStatisticsCounter": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                long from_timestamp = Long.parseLong(jsonObject.get("from_timestamp").toString());
+                long to_timestamp = Long.parseLong(jsonObject.get("to_timestamp").toString());
+                JSONObject response=new JSONObject();
+                response.put("type","getStatisticsCounter");
+                response.put("machineId",machineId);
+                response.put("statistics",serverDBHandler.getStatisticsCounter(machineId,from_timestamp,to_timestamp));
+                sendMessage(clientName, response.toString());
+                break;
+            }
+            case "getStatisticsBins": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                long from_timestamp = Long.parseLong(jsonObject.get("from_timestamp").toString());
+                long to_timestamp = Long.parseLong(jsonObject.get("to_timestamp").toString());
+                JSONObject response=new JSONObject();
+                response.put("type","getStatisticsBins");
+                response.put("machineId",machineId);
+                response.put("statistics",serverDBHandler.getStatisticsBins(machineId,from_timestamp,to_timestamp));
+                sendMessage(clientName, response.toString());
+                break;
+            }
+            case "getStatisticsBinsHourly": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                long from_timestamp = Long.parseLong(jsonObject.get("from_timestamp").toString());
+                long to_timestamp = Long.parseLong(jsonObject.get("to_timestamp").toString());
+                JSONObject response=new JSONObject();
+                response.put("type","getStatisticsBinsHourly");
+                response.put("machineId",machineId);
+                response.put("statistics",serverDBHandler.getStatisticsBinsHourly(machineId,from_timestamp,to_timestamp));
+                sendMessage(clientName, response.toString());
+                break;
+            }
+            case "getStatisticsBinsCounter": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                long from_timestamp = Long.parseLong(jsonObject.get("from_timestamp").toString());
+                long to_timestamp = Long.parseLong(jsonObject.get("to_timestamp").toString());
+                JSONObject response=new JSONObject();
+                response.put("type","getStatisticsBinsCounter");
+                response.put("machineId",machineId);
+                response.put("statistics",serverDBHandler.getStatisticsBinsCounter(machineId,from_timestamp,to_timestamp));
+                sendMessage(clientName, response.toString());
+                break;
+            }
             case "getGeneralViewData": {
                 int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
                 JSONObject response=new JSONObject();
                 response.put("type","getGeneralViewData");
                 response.put("machineId",machineId);
-                response.put("binsStates",serverDBHandler.getBinStates(machineId));
+                response.put("binsStates",serverDBHandler.getBinsStates(machineId));
+                response.put("conveyorsStates",serverDBHandler.getConveyorsStates(machineId));
                 sendMessage(clientName, response.toString());
                 break;
             }

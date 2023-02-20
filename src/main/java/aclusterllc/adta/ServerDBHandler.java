@@ -1510,7 +1510,190 @@ public class ServerDBHandler {
         }
         return statisticsJson;
     }
-    public JSONObject getBinStates(int machineId){
+    public JSONObject getStatisticsCounter(int machineId,long from_timestamp,long to_timestamp){
+        JSONObject statisticsJson = new JSONObject();
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String query = String.format("SELECT *,UNIX_TIMESTAMP(created_at) AS created_at_timestamp FROM statistics_counter WHERE machine_id=%d AND UNIX_TIMESTAMP(created_at) BETWEEN %d AND %d ORDER BY id DESC", machineId,from_timestamp,to_timestamp);
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next())
+            {
+                JSONObject row=new JSONObject();
+                row.put("total_read",rs.getInt("total_read"));
+                row.put("no_read",rs.getInt("no_read"));
+                row.put("no_code",rs.getInt("no_code"));
+                row.put("multiple_read",rs.getInt("multiple_read"));
+                row.put("valid",rs.getInt("valid"));
+                row.put("recirc",rs.getInt("recirc"));
+                row.put("total_good_length",rs.getInt("total_good_length"));
+                row.put("sum_length",rs.getInt("sum_length"));
+                row.put("total_good_gap",rs.getInt("total_good_gap"));
+                row.put("sum_gap",rs.getInt("sum_gap"));
+                row.put("sc0",rs.getInt("sc0"));
+                row.put("sc1",rs.getInt("sc1"));
+                row.put("sc3",rs.getInt("sc3"));
+                row.put("sc4",rs.getInt("sc4"));
+                row.put("sc5",rs.getInt("sc5"));
+                row.put("sc6",rs.getInt("sc6"));
+                row.put("sc7",rs.getInt("sc7"));
+                row.put("sc8",rs.getInt("sc8"));
+                row.put("sc9",rs.getInt("sc9"));
+                row.put("sc10",rs.getInt("sc10"));
+                row.put("sc12",rs.getInt("sc12"));
+                row.put("sc14",rs.getInt("sc14"));
+                row.put("sc16",rs.getInt("sc16"));
+                row.put("sc17",rs.getInt("sc17"));
+                row.put("sc18",rs.getInt("sc18"));
+                row.put("sc21",rs.getInt("sc21"));
+                row.put("i1",rs.getInt("i1"));
+                row.put("i2",rs.getInt("i2"));
+                row.put("i3",rs.getInt("i3"));
+                row.put("i4",rs.getInt("i4"));
+                row.put("i5",rs.getInt("i5"));
+                row.put("i6",rs.getInt("i6"));
+                row.put("i7",rs.getInt("i7"));
+                row.put("created_at",rs.getString("created_at"));
+                row.put("created_at_timestamp",rs.getLong("created_at_timestamp"));
+                statisticsJson.put(rs.getString("id"),row);
+
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return statisticsJson;
+    }
+    public JSONObject getStatisticsBins(int machineId,long from_timestamp,long to_timestamp){
+        JSONObject statisticsJson = new JSONObject();
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String query = String.format("SELECT *,UNIX_TIMESTAMP(created_at) AS created_at_timestamp FROM statistics_bins WHERE machine_id=%d AND UNIX_TIMESTAMP(created_at) BETWEEN %d AND %d ORDER BY id DESC", machineId,from_timestamp,to_timestamp);
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next())
+            {
+                JSONObject row=new JSONObject();
+                row.put("bin_id",rs.getInt("bin_id"));
+                row.put("recirc_count",rs.getInt("recirc_count"));
+                row.put("sc0",rs.getInt("sc0"));
+                row.put("sc1",rs.getInt("sc1"));
+                row.put("sc3",rs.getInt("sc3"));
+                row.put("sc4",rs.getInt("sc4"));
+                row.put("sc5",rs.getInt("sc5"));
+                row.put("sc6",rs.getInt("sc6"));
+                row.put("sc7",rs.getInt("sc7"));
+                row.put("sc8",rs.getInt("sc8"));
+                row.put("sc9",rs.getInt("sc9"));
+                row.put("sc10",rs.getInt("sc10"));
+                row.put("sc12",rs.getInt("sc12"));
+                row.put("sc14",rs.getInt("sc14"));
+                row.put("sc16",rs.getInt("sc16"));
+                row.put("sc17",rs.getInt("sc17"));
+                row.put("sc18",rs.getInt("sc18"));
+                row.put("sc21",rs.getInt("sc21"));
+                row.put("created_at",rs.getString("created_at"));
+                row.put("created_at_timestamp",rs.getLong("created_at_timestamp"));
+                statisticsJson.put(rs.getString("id"),row);
+
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return statisticsJson;
+    }
+    public JSONObject getStatisticsBinsHourly(int machineId,long from_timestamp,long to_timestamp){
+        JSONObject statisticsJson = new JSONObject();
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String query = String.format("SELECT *,UNIX_TIMESTAMP(created_at) AS created_at_timestamp FROM statistics_bins_hourly WHERE machine_id=%d AND UNIX_TIMESTAMP(created_at) BETWEEN %d AND %d ORDER BY id DESC", machineId,from_timestamp,to_timestamp);
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next())
+            {
+                JSONObject row=new JSONObject();
+                row.put("bin_id",rs.getInt("bin_id"));
+                row.put("recirc_count",rs.getInt("recirc_count"));
+                row.put("sc0",rs.getInt("sc0"));
+                row.put("sc1",rs.getInt("sc1"));
+                row.put("sc3",rs.getInt("sc3"));
+                row.put("sc4",rs.getInt("sc4"));
+                row.put("sc5",rs.getInt("sc5"));
+                row.put("sc6",rs.getInt("sc6"));
+                row.put("sc7",rs.getInt("sc7"));
+                row.put("sc8",rs.getInt("sc8"));
+                row.put("sc9",rs.getInt("sc9"));
+                row.put("sc10",rs.getInt("sc10"));
+                row.put("sc12",rs.getInt("sc12"));
+                row.put("sc14",rs.getInt("sc14"));
+                row.put("sc16",rs.getInt("sc16"));
+                row.put("sc17",rs.getInt("sc17"));
+                row.put("sc18",rs.getInt("sc18"));
+                row.put("sc21",rs.getInt("sc21"));
+                row.put("created_at",rs.getString("created_at"));
+                row.put("created_at_timestamp",rs.getLong("created_at_timestamp"));
+                statisticsJson.put(rs.getString("id"),row);
+
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return statisticsJson;
+    }
+    public JSONObject getStatisticsBinsCounter(int machineId,long from_timestamp,long to_timestamp){
+        JSONObject statisticsJson = new JSONObject();
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String query = String.format("SELECT *,UNIX_TIMESTAMP(created_at) AS created_at_timestamp FROM statistics_bins_counter WHERE machine_id=%d AND UNIX_TIMESTAMP(created_at) BETWEEN %d AND %d ORDER BY id DESC", machineId,from_timestamp,to_timestamp);
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next())
+            {
+                JSONObject row=new JSONObject();
+                row.put("bin_id",rs.getInt("bin_id"));
+                row.put("recirc_count",rs.getInt("recirc_count"));
+                row.put("sc0",rs.getInt("sc0"));
+                row.put("sc1",rs.getInt("sc1"));
+                row.put("sc3",rs.getInt("sc3"));
+                row.put("sc4",rs.getInt("sc4"));
+                row.put("sc5",rs.getInt("sc5"));
+                row.put("sc6",rs.getInt("sc6"));
+                row.put("sc7",rs.getInt("sc7"));
+                row.put("sc8",rs.getInt("sc8"));
+                row.put("sc9",rs.getInt("sc9"));
+                row.put("sc10",rs.getInt("sc10"));
+                row.put("sc12",rs.getInt("sc12"));
+                row.put("sc14",rs.getInt("sc14"));
+                row.put("sc16",rs.getInt("sc16"));
+                row.put("sc17",rs.getInt("sc17"));
+                row.put("sc18",rs.getInt("sc18"));
+                row.put("sc21",rs.getInt("sc21"));
+                row.put("created_at",rs.getString("created_at"));
+                row.put("created_at_timestamp",rs.getLong("created_at_timestamp"));
+                statisticsJson.put(rs.getString("id"),row);
+
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return statisticsJson;
+    }
+    public JSONObject getBinsStates(int machineId){
         JSONObject binStates = new JSONObject();
         try {
             Connection dbConn = DataSource.getConnection();
@@ -1557,5 +1740,25 @@ public class ServerDBHandler {
             logger.error(e.toString());
         }
         return binInputsStates;
+    }
+    public JSONObject getConveyorsStates(int machineId){
+        JSONObject conveyorsStates = new JSONObject();
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String query = String.format("SELECT conveyor_id, conveyor_state FROM conveyor_states WHERE machine_id=%d ORDER BY conveyor_state ASC", machineId);
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next())
+            {
+                conveyorsStates.put(rs.getString("conveyor_id"),rs.getInt("conveyor_state"));
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return conveyorsStates;
     }
 }
