@@ -330,61 +330,6 @@ public class ServerDBHandler {
 
         return mainJson;
     }
-
-    public JSONObject getActiveAlarmsList(int machineId) throws ParseException {
-        JSONObject mainJson = new JSONObject();
-        mainJson.put("type", "alarms_list");
-        JSONObject resultJson = new JSONObject();
-        JSONObject alarmsJson = new JSONObject();
-        try {
-            dbConn = DataSource.getConnection();
-            String alarmsQuery = String.format("SELECT machine_id, alarm_id, alarm_type, date_active, UNIX_TIMESTAMP(date_active) AS date_active_ts FROM active_alarms WHERE machine_id=%d ORDER BY id DESC", machineId);
-            Statement stmt = dbConn.createStatement();
-            ResultSet rs = stmt.executeQuery(alarmsQuery);
-
-            while (rs.next())
-            {
-                String comboId = String.format("%d%d%d", rs.getInt("machine_id"), rs.getInt("alarm_id"), rs.getInt("alarm_type"));
-                Map<String, String> singleAlarmData = dbCache.getAlarmData(comboId);
-
-                String dateActive = rs.getTimestamp("date_active").toString();
-
-                Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateActive);
-                Date nowDate = new Date();
-                long duration = getDuration(date, nowDate, TimeUnit.SECONDS);
-
-                JSONObject singleAlarmJson = new JSONObject();
-
-                String dateActiveTs = rs.getString("date_active_ts");
-
-                if(singleAlarmData.size() > 0) {
-                    singleAlarmData.forEach(singleAlarmJson::put);
-                    singleAlarmJson.put("timestamp", dateActiveTs);
-                    singleAlarmJson.put("duration", duration);
-                    alarmsJson.put(comboId, singleAlarmJson);
-                }
-            }
-
-            int machineMode = getMachineMode(stmt, machineId);
-
-            resultJson.put("mode", machineMode);
-
-            resultJson.put("alarms", alarmsJson);
-
-            mainJson.put("result", resultJson);
-
-            rs.close();
-            stmt.close();
-            dbConn.close(); // connection close
-
-        } catch (SQLException e) {
-            //e.printStackTrace();
-            logger.error(e.toString());
-        }
-
-        return mainJson;
-    }
-
     public JSONObject getAlarmsHistory(int machineId, long startTimestamp, long endTimestamp) throws ParseException {
         int totalRowToDisplay = 2500;
 
@@ -1760,5 +1705,32 @@ public class ServerDBHandler {
             logger.error(e.toString());
         }
         return conveyorsStates;
+    }
+    public JSONArray getActiveAlarms(int machineId) {
+        JSONArray resultsJsonArray = new JSONArray();
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String query = String.format("SELECT *,UNIX_TIMESTAMP(date_active) AS date_active_timestamp FROM active_alarms WHERE machine_id=%d ORDER BY id DESC", machineId);
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next())
+            {
+                JSONObject row=new JSONObject();
+                row.put("id",rs.getString("id"));
+                row.put("machine_id",rs.getString("machine_id"));
+                row.put("alarm_id",rs.getString("alarm_id"));
+                row.put("alarm_type",rs.getString("alarm_type"));
+                row.put("date_active",rs.getString("date_active"));
+                row.put("date_active_timestamp",rs.getLong("date_active_timestamp"));
+                resultsJsonArray.put(row);
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return resultsJsonArray;
     }
 }

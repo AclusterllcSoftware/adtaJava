@@ -323,6 +323,7 @@ public class Server implements Runnable {
                 response.put("machineId",machineId);
                 response.put("binsStates",serverDBHandler.getBinsStates(machineId));
                 response.put("conveyorsStates",serverDBHandler.getConveyorsStates(machineId));
+                response.put("activeAlarms",serverDBHandler.getActiveAlarms(machineId));
                 sendMessage(clientName, response.toString());
                 break;
             }
@@ -355,13 +356,13 @@ public class Server implements Runnable {
                 sendMessage(clientName, response.toString());
                 break;
             }
-            case "alarms_list": {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                //System.out.println("Alarms M ID:" + machineId);
-                JSONObject response = serverDBHandler.getActiveAlarmsList(machineId);
-                sendMessage(clientName, response.toString());
-                break;
-            }
+//            case "alarms_list": {
+//                int machineId = Integer.parseInt(jsonObject.get("id").toString());
+//                //System.out.println("Alarms M ID:" + machineId);
+//                JSONObject response = serverDBHandler.getActiveAlarmsList(machineId);
+//                sendMessage(clientName, response.toString());
+//                break;
+//            }
             case "alarms_history": {
                 int machineId = Integer.parseInt(jsonObject.get("id").toString());
                 JSONObject response = serverDBHandler.getAlarmsHistory(machineId, 0, 0);
