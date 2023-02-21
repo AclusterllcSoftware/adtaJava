@@ -1341,8 +1341,8 @@ public class ServerDBHandler {
         return timeUnit.convert(diffInMillies,TimeUnit.MILLISECONDS);
     }
     //--------------------------------------
-    public JSONObject getStatistics(int machineId,long from_timestamp,long to_timestamp){
-        JSONObject statisticsJson = new JSONObject();
+    public JSONArray getStatistics(int machineId,long from_timestamp,long to_timestamp){
+        JSONArray resultsJsonArray = new JSONArray();
         try {
             Connection dbConn = DataSource.getConnection();
             Statement stmt = dbConn.createStatement();
@@ -1351,6 +1351,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
+                row.put("id",rs.getInt("id"));
                 row.put("total_read",rs.getInt("total_read"));
                 row.put("no_read",rs.getInt("no_read"));
                 row.put("no_code",rs.getInt("no_code"));
@@ -1386,7 +1387,7 @@ public class ServerDBHandler {
                 row.put("i7",rs.getInt("i7"));
                 row.put("created_at",rs.getString("created_at"));
                 row.put("created_at_timestamp",rs.getLong("created_at_timestamp"));
-                statisticsJson.put(rs.getString("id"),row);
+                resultsJsonArray.put(row);
 
             }
             rs.close();
@@ -1396,10 +1397,10 @@ public class ServerDBHandler {
         catch (Exception e) {
             logger.error(e.toString());
         }
-        return statisticsJson;
+        return resultsJsonArray;
     }
-    public JSONObject getStatisticsHourly(int machineId,long from_timestamp,long to_timestamp){
-        JSONObject statisticsJson = new JSONObject();
+    public JSONArray getStatisticsHourly(int machineId,long from_timestamp,long to_timestamp){
+        JSONArray resultsJsonArray = new JSONArray();
         try {
             Connection dbConn = DataSource.getConnection();
             Statement stmt = dbConn.createStatement();
@@ -1408,6 +1409,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
+                row.put("id",rs.getInt("id"));
                 row.put("total_read",rs.getInt("total_read"));
                 row.put("no_read",rs.getInt("no_read"));
                 row.put("no_code",rs.getInt("no_code"));
@@ -1443,7 +1445,7 @@ public class ServerDBHandler {
                 row.put("i7",rs.getInt("i7"));
                 row.put("created_at",rs.getString("created_at"));
                 row.put("created_at_timestamp",rs.getLong("created_at_timestamp"));
-                statisticsJson.put(rs.getString("id"),row);
+                resultsJsonArray.put(row);
 
             }
             rs.close();
@@ -1453,10 +1455,10 @@ public class ServerDBHandler {
         catch (Exception e) {
             logger.error(e.toString());
         }
-        return statisticsJson;
+        return resultsJsonArray;
     }
-    public JSONObject getStatisticsCounter(int machineId,long from_timestamp,long to_timestamp){
-        JSONObject statisticsJson = new JSONObject();
+    public JSONArray getStatisticsCounter(int machineId,long from_timestamp,long to_timestamp){
+        JSONArray resultsJsonArray = new JSONArray();
         try {
             Connection dbConn = DataSource.getConnection();
             Statement stmt = dbConn.createStatement();
@@ -1465,6 +1467,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
+                row.put("id",rs.getInt("id"));
                 row.put("total_read",rs.getInt("total_read"));
                 row.put("no_read",rs.getInt("no_read"));
                 row.put("no_code",rs.getInt("no_code"));
@@ -1500,7 +1503,7 @@ public class ServerDBHandler {
                 row.put("i7",rs.getInt("i7"));
                 row.put("created_at",rs.getString("created_at"));
                 row.put("created_at_timestamp",rs.getLong("created_at_timestamp"));
-                statisticsJson.put(rs.getString("id"),row);
+                resultsJsonArray.put(row);
 
             }
             rs.close();
@@ -1510,10 +1513,10 @@ public class ServerDBHandler {
         catch (Exception e) {
             logger.error(e.toString());
         }
-        return statisticsJson;
+        return resultsJsonArray;
     }
-    public JSONObject getStatisticsBins(int machineId,long from_timestamp,long to_timestamp){
-        JSONObject statisticsJson = new JSONObject();
+    public JSONArray getStatisticsBins(int machineId,long from_timestamp,long to_timestamp){
+        JSONArray resultsJsonArray = new JSONArray();
         try {
             Connection dbConn = DataSource.getConnection();
             Statement stmt = dbConn.createStatement();
@@ -1522,6 +1525,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
+                row.put("id",rs.getInt("id"));
                 row.put("bin_id",rs.getInt("bin_id"));
                 row.put("recirc_count",rs.getInt("recirc_count"));
                 row.put("sc0",rs.getInt("sc0"));
@@ -1542,7 +1546,7 @@ public class ServerDBHandler {
                 row.put("sc21",rs.getInt("sc21"));
                 row.put("created_at",rs.getString("created_at"));
                 row.put("created_at_timestamp",rs.getLong("created_at_timestamp"));
-                statisticsJson.put(rs.getString("id"),row);
+                resultsJsonArray.put(row);
 
             }
             rs.close();
@@ -1552,10 +1556,10 @@ public class ServerDBHandler {
         catch (Exception e) {
             logger.error(e.toString());
         }
-        return statisticsJson;
+        return resultsJsonArray;
     }
-    public JSONObject getStatisticsBinsHourly(int machineId,long from_timestamp,long to_timestamp){
-        JSONObject statisticsJson = new JSONObject();
+    public JSONArray getStatisticsBinsHourly(int machineId,long from_timestamp,long to_timestamp){
+        JSONArray resultsJsonArray = new JSONArray();
         try {
             Connection dbConn = DataSource.getConnection();
             Statement stmt = dbConn.createStatement();
@@ -1564,6 +1568,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
+                row.put("id",rs.getInt("id"));
                 row.put("bin_id",rs.getInt("bin_id"));
                 row.put("recirc_count",rs.getInt("recirc_count"));
                 row.put("sc0",rs.getInt("sc0"));
@@ -1584,7 +1589,7 @@ public class ServerDBHandler {
                 row.put("sc21",rs.getInt("sc21"));
                 row.put("created_at",rs.getString("created_at"));
                 row.put("created_at_timestamp",rs.getLong("created_at_timestamp"));
-                statisticsJson.put(rs.getString("id"),row);
+                resultsJsonArray.put(row);
 
             }
             rs.close();
@@ -1594,10 +1599,10 @@ public class ServerDBHandler {
         catch (Exception e) {
             logger.error(e.toString());
         }
-        return statisticsJson;
+        return resultsJsonArray;
     }
-    public JSONObject getStatisticsBinsCounter(int machineId,long from_timestamp,long to_timestamp){
-        JSONObject statisticsJson = new JSONObject();
+    public JSONArray getStatisticsBinsCounter(int machineId,long from_timestamp,long to_timestamp){
+        JSONArray resultsJsonArray = new JSONArray();
         try {
             Connection dbConn = DataSource.getConnection();
             Statement stmt = dbConn.createStatement();
@@ -1606,6 +1611,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
+                row.put("id",rs.getInt("id"));
                 row.put("bin_id",rs.getInt("bin_id"));
                 row.put("recirc_count",rs.getInt("recirc_count"));
                 row.put("sc0",rs.getInt("sc0"));
@@ -1626,7 +1632,7 @@ public class ServerDBHandler {
                 row.put("sc21",rs.getInt("sc21"));
                 row.put("created_at",rs.getString("created_at"));
                 row.put("created_at_timestamp",rs.getLong("created_at_timestamp"));
-                statisticsJson.put(rs.getString("id"),row);
+                resultsJsonArray.put(row);
 
             }
             rs.close();
@@ -1636,8 +1642,9 @@ public class ServerDBHandler {
         catch (Exception e) {
             logger.error(e.toString());
         }
-        return statisticsJson;
+        return resultsJsonArray;
     }
+
     public JSONObject getBinsStates(int machineId){
         JSONObject binStates = new JSONObject();
         try {
