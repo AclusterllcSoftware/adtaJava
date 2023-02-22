@@ -1693,6 +1693,31 @@ public class ServerDBHandler {
         }
         return binInputsStates;
     }
+    public JSONObject getInputsStates(int machineId){
+        JSONObject resultJsonObject = new JSONObject();
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String query = String.format("SELECT id,input_id, input_state FROM input_states WHERE machine_id=%d", machineId);
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next())
+            {
+                JSONObject row=new JSONObject();
+                row.put("id",rs.getInt("id"));
+                row.put("input_id",rs.getInt("input_id"));
+                row.put("input_state",rs.getInt("input_state"));
+                row.put("machineId",machineId);
+                resultJsonObject.put(machineId+"_"+rs.getString("input_id"),row);
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return resultJsonObject;
+    }
     public JSONObject getConveyorsStates(int machineId){
         JSONObject conveyorsStates = new JSONObject();
         try {

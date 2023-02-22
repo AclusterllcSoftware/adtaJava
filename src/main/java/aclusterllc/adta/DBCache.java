@@ -276,7 +276,8 @@ public class DBCache {
                 item.put("enable_history",rs.getString("enable_history"));
                 item.put("device_type",rs.getString("device_type"));
                 item.put("device_number",rs.getString("device_number"));
-                inputsInfo.put(rs.getString("machine_id")+"_"+rs.getString("input_id")+"_"+rs.getString("input_type"),item);
+                //inputsInfo.put(rs.getString("machine_id")+"_"+rs.getString("input_id")+"_"+rs.getString("input_type"),item);
+                inputsInfo.put(rs.getString("machine_id")+"_"+rs.getString("input_id"),item);
 
             }
 
