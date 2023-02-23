@@ -348,6 +348,22 @@ public class Server implements Runnable {
                 sendMessage(clientName, response.toString());
                 break;
             }
+            case "sendDeviceCommand": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                int deviceId = Integer.parseInt(jsonObject.get("deviceId").toString());
+                int command = Integer.parseInt(jsonObject.get("command").toString());
+                int parameter1 = Integer.parseInt(jsonObject.get("parameter1").toString());
+
+                byte[] messageBytes= new byte[]{
+                        0, 0, 0, 123, 0, 0, 0, 20,
+                        (byte) (deviceId >> 24),(byte) (deviceId >> 16),(byte) (deviceId >> 8),(byte) (deviceId),
+                        (byte) (command >> 24),(byte) (command >> 16),(byte) (command >> 8),(byte) (command),
+                        (byte) (parameter1 >> 24),(byte) (parameter1 >> 16),(byte) (parameter1 >> 8),(byte) (parameter1)
+                    };
+                Client client = cmClients.get(machineId);
+                client.sendBytes(messageBytes);
+                break;
+            }
             //--------------------------
             case "mod_sort": {
                 int machineId = Integer.parseInt(jsonObject.get("id").toString());
