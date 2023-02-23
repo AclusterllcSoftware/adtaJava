@@ -337,11 +337,11 @@ public class Server implements Runnable {
                 sendMessage(clientName, response.toString());
                 break;
             }
-            case "getBinDetailsViewData": {
+            case "getGeneralBinDetailsViewData": {
                 int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
                 int sort_manager_id = Integer.parseInt(jsonObject.get("sort_manager_id").toString());
                 JSONObject response=new JSONObject();
-                response.put("type","getBinDetailsViewData");
+                response.put("type","getGeneralBinDetailsViewData");
                 response.put("machineId",machineId);
                 response.put("sort_manager_id",sort_manager_id);
                 response.put("inputsStates",serverDBHandler.getInputsStates(machineId));
