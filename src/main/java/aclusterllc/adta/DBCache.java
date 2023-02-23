@@ -47,7 +47,7 @@ public class DBCache {
     private static Logger logger=LoggerFactory.getLogger(DBCache.class);
     public static final Map<String, String> estop_locations = new HashMap<>();
 
-    public static final JSONObject alarmInfo = new JSONObject();
+    public static final JSONObject alarmsInfo = new JSONObject();
     public static final JSONObject binsInfo = new JSONObject();
     public static final JSONObject conveyorsInfo = new JSONObject();
     public static final JSONObject devicesInfo = new JSONObject();
@@ -110,7 +110,7 @@ public class DBCache {
                 item.put("location",rs.getString("location"));
                 item.put("variable_name",rs.getString("variable_name"));
                 item.put("gui_alarm_id",rs.getString("gui_alarm_id"));
-                alarmInfo.put(rs.getString("machine_id")+"_"+rs.getString("alarm_id")+"_"+rs.getString("alarm_type"),item);
+                alarmsInfo.put(rs.getString("machine_id")+"_"+rs.getString("alarm_id")+"_"+rs.getString("alarm_type"),item);
 
                 if (!machineAlarms.containsKey(rs.getInt("machine_id"))) {
                     machineAlarms.put(rs.getInt("machine_id"), new HashMap<>());
