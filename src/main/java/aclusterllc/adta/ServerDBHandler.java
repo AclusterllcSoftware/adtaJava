@@ -1013,7 +1013,10 @@ public class ServerDBHandler {
 
         try {
             dbConn = DataSource.getConnection();
-            String deviceStatesQuery = String.format("SELECT COUNT(id) AS total FROM device_states WHERE machine_id=%d AND device_state=0 AND device_id NOT IN (SELECT device_id FROM devices WHERE machine_id=%d AND gui_device_id=0) LIMIT 1", machineId, machineId);
+            //device_id=1 for 360/ingram
+            //device_id=2 for main plz exclude it too
+
+            String deviceStatesQuery = String.format("SELECT COUNT(id) AS total FROM device_states WHERE machine_id=%d AND device_state=0 AND device_id NOT IN (SELECT device_id FROM devices WHERE machine_id=%d AND (gui_device_id=0 OR device_id=1 OR device_id=2)) LIMIT 1", machineId, machineId);
             Statement stmt = dbConn.createStatement();
             ResultSet rs = stmt.executeQuery(deviceStatesQuery);
 
@@ -1050,58 +1053,6 @@ public class ServerDBHandler {
 
         return mainJson;
     }
-
-    public JSONObject getDeviceTitles(int machineId) throws ParseException {
-        JSONObject mainJson = new JSONObject();
-        mainJson.put("type", "device_titles");
-        JSONObject resultJson = new JSONObject();
-
-        try {
-            dbConn = DataSource.getConnection();
-            String devicesNamesQuery = String.format("SELECT gui_device_id, device_name FROM devices WHERE machine_id=%d", machineId);
-            Statement stmt = dbConn.createStatement();
-            ResultSet rs = stmt.executeQuery(devicesNamesQuery);
-
-            JSONObject devicesJson = new JSONObject();
-            while (rs.next())
-            {
-                devicesJson.put(Integer.toString(rs.getInt("gui_device_id")), rs.getString("device_name"));
-            }
-
-            resultJson.put("devices", devicesJson);
-
-            String inputsNamesQuery = String.format("SELECT gui_input_id, electrical_name, description FROM inputs WHERE machine_id=%d AND input_type=3", machineId);
-            rs = stmt.executeQuery(inputsNamesQuery);
-
-            JSONObject estopsJson = new JSONObject();
-            while (rs.next())
-            {
-                String electrical_name = rs.getString("electrical_name");
-
-                if(!electrical_name.equals("")) {
-                    electrical_name = " ["+ electrical_name +"]";
-                }
-
-                String description = rs.getString("description") + electrical_name;
-                estopsJson.put(Integer.toString(rs.getInt("gui_input_id")), description);
-            }
-
-            resultJson.put("estops", estopsJson);
-
-            rs.close();
-            stmt.close();
-            dbConn.close(); // connection close
-
-        } catch (SQLException e) {
-            //e.printStackTrace();
-            logger.error(e.toString());
-        }
-
-        mainJson.put("result", resultJson);
-
-        return mainJson;
-    }
-
     public JSONObject getSettings(int machineId) throws ParseException {
         JSONObject mainJson = new JSONObject();
         mainJson.put("type", "settings");
@@ -1709,6 +1660,43 @@ public class ServerDBHandler {
             logger.error(e.toString());
         }
         return conveyorsStates;
+    }
+    public JSONObject getDevicesStates(int machineId){
+        JSONObject resultJsonObject = new JSONObject();
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String query = String.format("SELECT id,device_id, device_state FROM device_states WHERE machine_id=%d", machineId);
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next())
+            {
+                JSONObject row=new JSONObject();
+                row.put("id",rs.getInt("id"));
+                row.put("device_id",rs.getInt("device_id"));
+                if(row.getInt("device_id")==2){
+                    if(ServerConstants.plcConnectStatus.get(machineId) == 1){
+                        row.put("device_state",1);
+                    }
+                    else{
+                        row.put("device_state",0);
+                    }
+                }
+                else{
+                    row.put("device_state",rs.getInt("device_state"));
+                }
+                row.put("machineId",machineId);
+
+                resultJsonObject.put(machineId+"_"+rs.getString("device_id"),row);
+            }
+
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return resultJsonObject;
     }
     public JSONArray getActiveAlarms(int machineId) {
         JSONArray resultsJsonArray = new JSONArray();

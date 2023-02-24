@@ -328,6 +328,19 @@ public class Server implements Runnable {
                 sendMessage(clientName, response.toString());
                 break;
             }
+            case "getGeneralDevicesViewData": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                JSONObject response=new JSONObject();
+                response.put("type","getGeneralDevicesViewData");
+                response.put("machineId",machineId);
+                response.put("binsStates",serverDBHandler.getBinsStates(machineId));
+                response.put("inputsStates",serverDBHandler.getInputsStates(machineId));//for estops
+                response.put("conveyorsStates",serverDBHandler.getConveyorsStates(machineId));
+                response.put("devicesStates",serverDBHandler.getDevicesStates(machineId));
+                response.put("activeAlarms",serverDBHandler.getActiveAlarms(machineId));
+                sendMessage(clientName, response.toString());
+                break;
+            }
             case "getAlarmsViewData": {
                 int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
                 JSONObject response=new JSONObject();
@@ -432,12 +445,6 @@ public class Server implements Runnable {
             case "device_status": {
                 int machineId = Integer.parseInt(jsonObject.get("id").toString());
                 JSONObject response = serverDBHandler.getDeviceStatus(machineId);
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "device_titles": {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                JSONObject response = serverDBHandler.getDeviceTitles(machineId);
                 sendMessage(clientName, response.toString());
                 break;
             }
