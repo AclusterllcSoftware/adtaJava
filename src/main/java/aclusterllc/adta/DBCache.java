@@ -176,7 +176,7 @@ public class DBCache {
                 item.put("conveyor_name",rs.getString("conveyor_name"));
                 item.put("conveyor_tag_name",rs.getString("conveyor_tag_name"));
                 item.put("gui_conveyor_id",rs.getString("gui_conveyor_id"));
-                conveyorsInfo.put(rs.getString("machine_id")+"_"+rs.getString("conveyor_id")+"_"+rs.getString("conveyor_type"),item);
+                conveyorsInfo.put(rs.getString("machine_id")+"_"+rs.getString("conveyor_id"),item);
             }
 
             String devicesQuery = "SELECT * FROM devices WHERE 1";
@@ -203,7 +203,7 @@ public class DBCache {
                 item.put("device_type",rs.getString("device_type"));
                 item.put("device_name",rs.getString("device_name"));
                 item.put("gui_device_id",rs.getString("gui_device_id"));
-                devicesInfo.put(rs.getString("machine_id")+"_"+rs.getString("device_id")+"_"+rs.getString("device_type"),item);
+                devicesInfo.put(rs.getString("machine_id")+"_"+rs.getString("device_id"),item);
 
             }
 
