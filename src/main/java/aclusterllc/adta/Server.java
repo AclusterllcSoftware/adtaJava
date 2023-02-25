@@ -318,6 +318,7 @@ public class Server implements Runnable {
             }
             case "getGeneralViewData": {
                 int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                //JSONObject params= (JSONObject) jsonObject.get("params");
                 JSONObject response=new JSONObject();
                 response.put("type","getGeneralViewData");
                 response.put("machineId",machineId);
@@ -330,6 +331,7 @@ public class Server implements Runnable {
             }
             case "getGeneralDevicesViewData": {
                 int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                //JSONObject params= (JSONObject) jsonObject.get("params");
                 JSONObject response=new JSONObject();
                 response.put("type","getGeneralDevicesViewData");
                 response.put("machineId",machineId);
@@ -341,8 +343,21 @@ public class Server implements Runnable {
                 sendMessage(clientName, response.toString());
                 break;
             }
+            case "getGeneralMotorsViewData": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                //JSONObject params= (JSONObject) jsonObject.get("params");
+                JSONObject response=new JSONObject();
+                response.put("type","getGeneralMotorsViewData");
+                response.put("machineId",machineId);
+                response.put("binsStates",serverDBHandler.getBinsStates(machineId));
+                response.put("conveyorsStates",serverDBHandler.getConveyorsStates(machineId));
+                response.put("activeAlarms",serverDBHandler.getActiveAlarms(machineId));
+                sendMessage(clientName, response.toString());
+                break;
+            }
             case "getAlarmsViewData": {
                 int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                //JSONObject params= (JSONObject) jsonObject.get("params");
                 JSONObject response=new JSONObject();
                 response.put("type","getAlarmsViewData");
                 response.put("machineId",machineId);
