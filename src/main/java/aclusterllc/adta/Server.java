@@ -367,7 +367,8 @@ public class Server implements Runnable {
             }
             case "getGeneralBinDetailsViewData": {
                 int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                int sort_manager_id = Integer.parseInt(jsonObject.get("sort_manager_id").toString());
+                JSONObject params= (JSONObject) jsonObject.get("params");
+                int sort_manager_id = Integer.parseInt(params.get("sort_manager_id").toString());
                 JSONObject response=new JSONObject();
                 response.put("type","getGeneralBinDetailsViewData");
                 response.put("machineId",machineId);
@@ -378,10 +379,10 @@ public class Server implements Runnable {
             }
             case "sendDeviceCommand": {
                 int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                int deviceId = Integer.parseInt(jsonObject.get("deviceId").toString());
-                int command = Integer.parseInt(jsonObject.get("command").toString());
-                int parameter1 = Integer.parseInt(jsonObject.get("parameter1").toString());
-
+                JSONObject params= (JSONObject) jsonObject.get("params");
+                int deviceId = Integer.parseInt(params.get("deviceId").toString());
+                int command = Integer.parseInt(params.get("command").toString());
+                int parameter1 = Integer.parseInt(params.get("parameter1").toString());
                 byte[] messageBytes= new byte[]{
                         0, 0, 0, 123, 0, 0, 0, 20,
                         (byte) (deviceId >> 24),(byte) (deviceId >> 16),(byte) (deviceId >> 8),(byte) (deviceId),
