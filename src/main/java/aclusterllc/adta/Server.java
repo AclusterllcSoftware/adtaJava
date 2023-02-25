@@ -252,8 +252,9 @@ public class Server implements Runnable {
             }
             case "getStatistics": {
                 int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                long from_timestamp = Long.parseLong(jsonObject.get("from_timestamp").toString());
-                long to_timestamp = Long.parseLong(jsonObject.get("to_timestamp").toString());
+                JSONObject params= (JSONObject) jsonObject.get("params");
+                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
                 JSONObject response=new JSONObject();
                 response.put("type","getStatistics");
                 response.put("machineId",machineId);
@@ -263,8 +264,9 @@ public class Server implements Runnable {
             }
             case "getStatisticsHourly": {
                 int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                long from_timestamp = Long.parseLong(jsonObject.get("from_timestamp").toString());
-                long to_timestamp = Long.parseLong(jsonObject.get("to_timestamp").toString());
+                JSONObject params= (JSONObject) jsonObject.get("params");
+                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
                 JSONObject response=new JSONObject();
                 response.put("type","getStatisticsHourly");
                 response.put("machineId",machineId);
@@ -274,8 +276,9 @@ public class Server implements Runnable {
             }
             case "getStatisticsCounter": {
                 int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                long from_timestamp = Long.parseLong(jsonObject.get("from_timestamp").toString());
-                long to_timestamp = Long.parseLong(jsonObject.get("to_timestamp").toString());
+                JSONObject params= (JSONObject) jsonObject.get("params");
+                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
                 JSONObject response=new JSONObject();
                 response.put("type","getStatisticsCounter");
                 response.put("machineId",machineId);
@@ -285,8 +288,9 @@ public class Server implements Runnable {
             }
             case "getStatisticsBins": {
                 int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                long from_timestamp = Long.parseLong(jsonObject.get("from_timestamp").toString());
-                long to_timestamp = Long.parseLong(jsonObject.get("to_timestamp").toString());
+                JSONObject params= (JSONObject) jsonObject.get("params");
+                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
                 JSONObject response=new JSONObject();
                 response.put("type","getStatisticsBins");
                 response.put("machineId",machineId);
@@ -296,8 +300,9 @@ public class Server implements Runnable {
             }
             case "getStatisticsBinsHourly": {
                 int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                long from_timestamp = Long.parseLong(jsonObject.get("from_timestamp").toString());
-                long to_timestamp = Long.parseLong(jsonObject.get("to_timestamp").toString());
+                JSONObject params= (JSONObject) jsonObject.get("params");
+                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
                 JSONObject response=new JSONObject();
                 response.put("type","getStatisticsBinsHourly");
                 response.put("machineId",machineId);
@@ -307,8 +312,9 @@ public class Server implements Runnable {
             }
             case "getStatisticsBinsCounter": {
                 int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                long from_timestamp = Long.parseLong(jsonObject.get("from_timestamp").toString());
-                long to_timestamp = Long.parseLong(jsonObject.get("to_timestamp").toString());
+                JSONObject params= (JSONObject) jsonObject.get("params");
+                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
                 JSONObject response=new JSONObject();
                 response.put("type","getStatisticsBinsCounter");
                 response.put("machineId",machineId);
