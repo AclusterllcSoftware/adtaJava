@@ -236,6 +236,7 @@ public class Server implements Runnable {
                 basic_info.put("conveyorsInfo",DBCache.conveyorsInfo);
                 basic_info.put("devicesInfo",DBCache.devicesInfo);
                 basic_info.put("inputsInfo",DBCache.inputsInfo);
+                basic_info.put("motorsInfo",DBCache.motorsInfo);
                 basic_info.put("scsInfo",DBCache.scsInfo);
 
                 JSONObject response = new JSONObject();
@@ -356,7 +357,9 @@ public class Server implements Runnable {
                 response.put("type","getGeneralMotorsViewData");
                 response.put("machineId",machineId);
                 response.put("binsStates",serverDBHandler.getBinsStates(machineId));
+                response.put("inputsStates",serverDBHandler.getInputsStates(machineId));
                 response.put("conveyorsStates",serverDBHandler.getConveyorsStates(machineId));
+                response.put("motorsCurrentSpeed",DBCache.motorsCurrentSpeed);
                 response.put("activeAlarms",serverDBHandler.getActiveAlarms(machineId));
                 sendMessage(clientName, response.toString());
                 break;

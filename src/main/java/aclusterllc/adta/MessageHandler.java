@@ -1,5 +1,6 @@
 package aclusterllc.adta;
 
+import org.apache.logging.log4j.core.net.ssl.SslConfiguration;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -655,7 +656,7 @@ public class MessageHandler {
                    //System.out.println("Ping Response");
                 }
             }
-            List<Integer> dbWrapperPostMessages=Arrays.asList(11,12,13,50,51,52);
+            List<Integer> dbWrapperPostMessages=Arrays.asList(11,12,13,49,50,51,52);
             if(dbWrapperPostMessages.contains(messageId))
             {
                 JSONObject params=new JSONObject();
@@ -846,6 +847,12 @@ public class MessageHandler {
         else if(messageId==12){
             if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1) {
                 sendAllBinStatusTo360();
+            }
+        }
+        else if (messageId==49){
+            int motorCount = (int) bytesToLong(Arrays.copyOfRange(bodyBytes, 4, 8));//4,5,6,7
+            for(int i=0;i<motorCount;i++){
+                DBCache.motorsCurrentSpeed.put(this.client.machineId+"_"+(i+1),(int) bytesToLong(Arrays.copyOfRange(bodyBytes, 8+i*2, 10+i*2)));
             }
         }
         else if(messageId==50){

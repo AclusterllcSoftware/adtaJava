@@ -53,6 +53,8 @@ public class DBCache {
     public static final JSONObject devicesInfo = new JSONObject();
     public static final JSONObject inputsInfo = new JSONObject();
     public static final JSONObject scsInfo = new JSONObject();
+    public static final JSONObject motorsInfo = new JSONObject();
+    public static final JSONObject motorsCurrentSpeed = new JSONObject();
 
     private DBCache(){
         try {
@@ -279,6 +281,28 @@ public class DBCache {
                 //inputsInfo.put(rs.getString("machine_id")+"_"+rs.getString("input_id")+"_"+rs.getString("input_type"),item);
                 inputsInfo.put(rs.getString("machine_id")+"_"+rs.getString("input_id"),item);
 
+            }
+            String query = "SELECT * FROM motors WHERE 1";
+            rs = stmt.executeQuery(query);
+            while (rs.next())
+            {
+                JSONObject item=new JSONObject();
+                item.put("id",rs.getString("id"));
+                item.put("machine_id",rs.getString("machine_id"));
+                item.put("motor_id",rs.getString("motor_id"));
+                item.put("motor_type",rs.getString("motor_type"));
+                item.put("motor_name",rs.getString("motor_name"));
+                item.put("location",rs.getString("location"));
+                item.put("ip_address",rs.getString("ip_address"));
+                item.put("gui_motor_id",rs.getString("gui_motor_id"));
+                item.put("device_number",rs.getString("device_number"));
+                item.put("input_id",rs.getString("input_id"));
+                item.put("alarm_id",rs.getString("alarm_id"));
+                item.put("alarm_type",rs.getString("alarm_type"));
+                item.put("speed_max",rs.getString("speed_max"));
+                item.put("speed_min",rs.getString("speed_min"));
+                motorsInfo.put(rs.getString("machine_id")+"_"+rs.getString("motor_id"),item);
+                motorsCurrentSpeed.put(rs.getString("machine_id")+"_"+rs.getString("motor_id"),0);
             }
 
             String scsQuery = "SELECT * FROM scs WHERE 1";
