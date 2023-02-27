@@ -359,6 +359,7 @@ public class Server implements Runnable {
                 response.put("binsStates",serverDBHandler.getBinsStates(machineId));
                 response.put("inputsStates",serverDBHandler.getInputsStates(machineId));
                 response.put("conveyorsStates",serverDBHandler.getConveyorsStates(machineId));
+                response.put("devicesStates",serverDBHandler.getDevicesStates(machineId));
                 response.put("motorsCurrentSpeed",DBCache.motorsCurrentSpeed);
                 response.put("activeAlarms",serverDBHandler.getActiveAlarms(machineId));
                 sendMessage(clientName, response.toString());
