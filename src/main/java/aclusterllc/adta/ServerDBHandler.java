@@ -1725,4 +1725,24 @@ public class ServerDBHandler {
         }
         return resultsJsonArray;
     }
+    public int getMachineMode(int machineId){
+        int machineMode = 0;
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String query = String.format("SELECT machine_mode FROM machines WHERE machine_id=%d LIMIT 1", machineId);
+            ResultSet rs = stmt.executeQuery(query);
+            if(rs.next())
+            {
+                machineMode = rs.getInt("machine_mode");
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return machineMode;
+    }
 }

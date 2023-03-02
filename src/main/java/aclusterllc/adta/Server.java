@@ -362,6 +362,7 @@ public class Server implements Runnable {
                 response.put("devicesStates",serverDBHandler.getDevicesStates(machineId));
                 response.put("motorsCurrentSpeed",DBCache.motorsCurrentSpeed);
                 response.put("activeAlarms",serverDBHandler.getActiveAlarms(machineId));
+                response.put("machineMode",serverDBHandler.getMachineMode(machineId));
                 sendMessage(clientName, response.toString());
                 break;
             }
