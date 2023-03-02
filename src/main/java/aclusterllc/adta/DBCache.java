@@ -150,6 +150,8 @@ public class DBCache {
                 item.put("sort_manager_id",rs.getString("sort_manager_id"));
                 item.put("description",rs.getString("description"));
                 item.put("gui_bin_id",rs.getString("gui_bin_id"));
+                item.put("recirc_bin",rs.getString("recirc_bin"));
+                item.put("reject_bin",rs.getString("reject_bin"));
                 binsInfo.put(rs.getString("machine_id")+"_"+rs.getString("bin_id"),item);
             }
 
@@ -278,7 +280,7 @@ public class DBCache {
                 item.put("enable_history",rs.getString("enable_history"));
                 item.put("device_type",rs.getString("device_type"));
                 item.put("device_number",rs.getString("device_number"));
-                //inputsInfo.put(rs.getString("machine_id")+"_"+rs.getString("input_id")+"_"+rs.getString("input_type"),item);
+                item.put("device_fct",rs.getString("device_fct"));
                 inputsInfo.put(rs.getString("machine_id")+"_"+rs.getString("input_id"),item);
 
             }
