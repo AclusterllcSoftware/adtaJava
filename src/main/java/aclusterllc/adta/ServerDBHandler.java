@@ -1309,6 +1309,7 @@ public class ServerDBHandler {
                 row.put("multiple_read",rs.getInt("multiple_read"));
                 row.put("valid",rs.getInt("valid"));
                 row.put("recirc",rs.getInt("recirc"));
+                row.put("reject",rs.getInt("reject"));
                 row.put("total_good_length",rs.getInt("total_good_length"));
                 row.put("sum_length",rs.getInt("sum_length"));
                 row.put("total_good_gap",rs.getInt("total_good_gap"));
@@ -1367,6 +1368,7 @@ public class ServerDBHandler {
                 row.put("multiple_read",rs.getInt("multiple_read"));
                 row.put("valid",rs.getInt("valid"));
                 row.put("recirc",rs.getInt("recirc"));
+                row.put("reject",rs.getInt("reject"));
                 row.put("total_good_length",rs.getInt("total_good_length"));
                 row.put("sum_length",rs.getInt("sum_length"));
                 row.put("total_good_gap",rs.getInt("total_good_gap"));
@@ -1425,6 +1427,7 @@ public class ServerDBHandler {
                 row.put("multiple_read",rs.getInt("multiple_read"));
                 row.put("valid",rs.getInt("valid"));
                 row.put("recirc",rs.getInt("recirc"));
+                row.put("reject",rs.getInt("reject"));
                 row.put("total_good_length",rs.getInt("total_good_length"));
                 row.put("sum_length",rs.getInt("sum_length"));
                 row.put("total_good_gap",rs.getInt("total_good_gap"));
@@ -1479,6 +1482,7 @@ public class ServerDBHandler {
                 row.put("id",rs.getInt("id"));
                 row.put("bin_id",rs.getInt("bin_id"));
                 row.put("recirc_count",rs.getInt("recirc_count"));
+                row.put("reject",rs.getInt("reject"));
                 row.put("sc0",rs.getInt("sc0"));
                 row.put("sc1",rs.getInt("sc1"));
                 row.put("sc3",rs.getInt("sc3"));
@@ -1522,6 +1526,7 @@ public class ServerDBHandler {
                 row.put("id",rs.getInt("id"));
                 row.put("bin_id",rs.getInt("bin_id"));
                 row.put("recirc_count",rs.getInt("recirc_count"));
+                row.put("reject",rs.getInt("reject"));
                 row.put("sc0",rs.getInt("sc0"));
                 row.put("sc1",rs.getInt("sc1"));
                 row.put("sc3",rs.getInt("sc3"));
@@ -1565,6 +1570,7 @@ public class ServerDBHandler {
                 row.put("id",rs.getInt("id"));
                 row.put("bin_id",rs.getInt("bin_id"));
                 row.put("recirc_count",rs.getInt("recirc_count"));
+                row.put("reject",rs.getInt("reject"));
                 row.put("sc0",rs.getInt("sc0"));
                 row.put("sc1",rs.getInt("sc1"));
                 row.put("sc3",rs.getInt("sc3"));
