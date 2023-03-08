@@ -1751,4 +1751,48 @@ public class ServerDBHandler {
         }
         return machineMode;
     }
+    public JSONArray getProductsHistory(int machineId,long from_timestamp,long to_timestamp){
+        JSONArray resultsJsonArray = new JSONArray();
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+
+            String query = String.format("SELECT *,UNIX_TIMESTAMP(created_at) AS created_at_timestamp FROM product_history WHERE machine_id=%d AND UNIX_TIMESTAMP(created_at) BETWEEN %d AND %d ORDER BY id DESC", machineId,from_timestamp,to_timestamp);
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next())
+            {
+                JSONObject row=new JSONObject();
+                row.put("id",rs.getInt("id"));
+                row.put("product_id",rs.getInt("product_id"));
+                row.put("machine_id",rs.getInt("machine_id"));
+                row.put("mail_id",rs.getInt("mail_id"));
+                row.put("length",rs.getInt("length"));
+                row.put("width",rs.getInt("width"));
+                row.put("height",rs.getInt("height"));
+                row.put("weight",rs.getInt("weight"));
+                row.put("reject_code",rs.getInt("reject_code"));
+                row.put("number_of_results",rs.getInt("number_of_results"));
+                row.put("barcode1_type",rs.getInt("barcode1_type"));
+                row.put("barcode1_string",rs.getString("barcode1_string"));
+                row.put("barcode2_type",rs.getInt("barcode2_type"));
+                row.put("barcode2_string",rs.getString("barcode2_string"));
+                row.put("barcode3_type",rs.getInt("barcode3_type"));
+                row.put("barcode3_string",rs.getString("barcode3_string"));
+                row.put("destination",rs.getInt("destination"));
+                row.put("alternate_destination",rs.getInt("alternate_destination"));
+                row.put("final_destination",rs.getInt("final_destination"));
+                row.put("reason",rs.getInt("reason"));
+                row.put("created_at",rs.getString("created_at"));
+                row.put("created_at_timestamp",rs.getLong("created_at_timestamp"));
+                resultsJsonArray.put(row);
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return resultsJsonArray;
+    }
 }

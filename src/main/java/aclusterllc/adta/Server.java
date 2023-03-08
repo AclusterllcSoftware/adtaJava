@@ -404,6 +404,18 @@ public class Server implements Runnable {
                 client.sendBytes(messageBytes);
                 break;
             }
+            case "getProductsHistory": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                JSONObject params= (JSONObject) jsonObject.get("params");
+                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
+                JSONObject response=new JSONObject();
+                response.put("type","getProductsHistory");
+                response.put("machineId",machineId);
+                response.put("products",serverDBHandler.getProductsHistory(machineId,from_timestamp,to_timestamp));
+                sendMessage(clientName, response.toString());
+                break;
+            }
             //--------------------------
             case "mod_sort": {
                 int machineId = Integer.parseInt(jsonObject.get("id").toString());
