@@ -1,5 +1,6 @@
 package aclusterllc.adta;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -674,66 +675,53 @@ public class DatabaseWrapper {
     }
 
     public boolean processConfirmDestination(long mailId, int destination, int altDestination, int finalDestination, int reason, int machineId) {
-        //1, 2, 3, 4, 5
         List<Integer> possibleReasons=new ArrayList<>(Arrays.asList(0, 1, 3, 4, 5,6,7,8,9,10,12,14,16,17,18,21));
-        //int machineId = 1;
-        String sql0 = "";
-        String tbl_ingram_products = "ingram_products";
-        String tbl_products = "products";
-        if((finalDestination<31) && (Integer.parseInt(ServerConstants.configuration.get("ingram_enable"))==1) && (Integer.parseInt(ServerConstants.configuration.get("delete_after_confirm_destination_message"))==1)){
-            sql0 = format("DELETE record from %s AS record Join  %s on(barcode1_string=carton_id OR barcode2_string=carton_id OR barcode3_string=carton_id ) where mail_id=%d and machine_id=%d;",
-                    tbl_ingram_products,
-                    tbl_products,
-                    mailId,
-                    machineId);
-            logger.info("Destination confirmed.:" + sql0);
-        }
 
         String tbl = "products";
         String historyTbl = "product_history";
 
-        String sql1 = format("INSERT INTO %s (`product_id`, " +
-                "`machine_id`, " +
-                "`mail_id`, " +
-                "`length`, " +
-                "`width`, " +
-                "`height`, " +
-                "`weight`, " +
-                "`reject_code`, " +
-                "`number_of_results`, " +
-                "`barcode1_type`, " +
-                "`barcode1_string`, " +
-                "`barcode2_type`, " +
-                "`barcode2_string`, " +
-                "`barcode3_type`, " +
-                "`barcode3_string`, " +
-                "`created_at`, " +
-                "`dimension_at`," +
-                "`barcode_at`," +
-                "`destination`, " +
-                "`alternate_destination`," +
-                "`final_destination`, " +
-                "`reason`)" +
-                "SELECT `id`, " +
-                "`machine_id`, " +
-                "`mail_id`, " +
-                "`length`, " +
-                "`width`, " +
-                "`height`, " +
-                "`weight`, " +
-                "`reject_code`, " +
-                "`number_of_results`, " +
-                "`barcode1_type`, " +
-                "`barcode1_string`, " +
-                "`barcode2_type`, " +
-                "`barcode2_string`, " +
-                "`barcode3_type`, " +
-                "`barcode3_string`, " +
-                "`created_at`, " +
-                "`dimension_at`, " +
-                "`barcode_at`, " +
-                "%d, %d, %d, %d " +
-                " FROM %s WHERE machine_id=%d AND mail_id=%d LIMIT 1;",
+        String query = format("INSERT INTO %s (`product_id`, " +
+                        "`machine_id`, " +
+                        "`mail_id`, " +
+                        "`length`, " +
+                        "`width`, " +
+                        "`height`, " +
+                        "`weight`, " +
+                        "`reject_code`, " +
+                        "`number_of_results`, " +
+                        "`barcode1_type`, " +
+                        "`barcode1_string`, " +
+                        "`barcode2_type`, " +
+                        "`barcode2_string`, " +
+                        "`barcode3_type`, " +
+                        "`barcode3_string`, " +
+                        "`created_at`, " +
+                        "`dimension_at`," +
+                        "`barcode_at`," +
+                        "`destination`, " +
+                        "`alternate_destination`," +
+                        "`final_destination`, " +
+                        "`reason`)" +
+                        "SELECT `id`, " +
+                        "`machine_id`, " +
+                        "`mail_id`, " +
+                        "`length`, " +
+                        "`width`, " +
+                        "`height`, " +
+                        "`weight`, " +
+                        "`reject_code`, " +
+                        "`number_of_results`, " +
+                        "`barcode1_type`, " +
+                        "`barcode1_string`, " +
+                        "`barcode2_type`, " +
+                        "`barcode2_string`, " +
+                        "`barcode3_type`, " +
+                        "`barcode3_string`, " +
+                        "`created_at`, " +
+                        "`dimension_at`, " +
+                        "`barcode_at`, " +
+                        "%d, %d, %d, %d " +
+                        " FROM %s WHERE machine_id=%d AND mail_id=%d LIMIT 1;",
                 historyTbl,
                 destination,
                 altDestination,
@@ -742,59 +730,56 @@ public class DatabaseWrapper {
                 tbl,
                 machineId,
                 mailId);
+        query += format("DELETE FROM %s WHERE machine_id=%d AND mail_id=%d LIMIT 1;", tbl, machineId, mailId);
 
-        String sql2 = format("DELETE FROM %s WHERE machine_id=%d AND mail_id=%d LIMIT 1;", tbl, machineId, mailId);
-
-        String sql31 = "";
-        String sql32 = "";
-        String sql33 = "";
-        String sql41 = "";
-        String sql42 = "";
-        String sql43 = "";
-        String tbl2 = "statistics";
-
-        if(possibleReasons.contains(reason)) {
-            String columnName = "sc" + Integer.toString(reason);
-
-            sql31 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
-                    tbl2,
-                    columnName,
-                    columnName,
-                    machineId);
-            sql32 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
-                    "statistics_hourly",
-                    columnName,
-                    columnName,
-                    machineId);
-            sql33 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
-                    "statistics_counter",
-                    columnName,
-                    columnName,
-                    machineId);
-            sql41 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d AND bin_id=%d ORDER BY id DESC LIMIT 1;",
-                    "statistics_bins",
-                    columnName,
-                    columnName,
-                    machineId,
-                    destination);
-            sql42 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d AND bin_id=%d ORDER BY id DESC LIMIT 1;",
-                    "statistics_bins_hourly",
-                    columnName,
-                    columnName,
-                    machineId,
-                    destination);
-            sql43 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d AND bin_id=%d ORDER BY id DESC LIMIT 1;",
-                    "statistics_bins_counter",
-                    columnName,
-                    columnName,
-                    machineId,
-                    destination);
+        JSONObject destBin=null;
+        JSONObject finalDestBin=null;
+        for(int i = 0; i<DBCache.binsInfo.names().length(); i++){
+            JSONObject bin= (JSONObject) DBCache.binsInfo.get(DBCache.binsInfo.names().getString(i));
+            if(bin.getInt("sort_manager_id")==destination){
+                destBin=bin;
+            }
+            if(bin.getInt("sort_manager_id")==finalDestination){
+                finalDestBin=bin;
+            }
         }
+        if(destBin!= null && finalDestBin!=null){
+            if(possibleReasons.contains(reason)) {
+                String scColumn = "sc" + Integer.toString(reason);
+                String recircUpdate="";
+                String rejectUpdate="";
 
-        String bigQuery = sql0+sql1+sql2+sql31+sql32+sql33+sql41+sql42+sql43;
+                //statistics
+                if(finalDestBin.getInt("recirc_bin")==1){
+                    recircUpdate=" ,recirc=recirc+1";
+                }
+                else if(finalDestBin.getInt("reject_bin")==1){
+                    rejectUpdate=" ,reject=reject+1";
+                }
+                query += format("UPDATE %s SET %s=%s+1%s%s WHERE machine_id=%d ORDER BY id DESC LIMIT 1;","statistics",scColumn,scColumn,recircUpdate,rejectUpdate,machineId);
+                query += format("UPDATE %s SET %s=%s+1%s%s WHERE machine_id=%d ORDER BY id DESC LIMIT 1;","statistics_counter",scColumn,scColumn,recircUpdate,rejectUpdate,machineId);
+                query += format("UPDATE %s SET %s=%s+1%s%s WHERE machine_id=%d ORDER BY id DESC LIMIT 1;","statistics_hourly",scColumn,scColumn,recircUpdate,rejectUpdate,machineId);
 
-        dbHandler.append(bigQuery);
-
+//                //bin statistics
+//                //update short code for all condition
+                //if((destBin.getInt("reject_bin")==1)||(destBin==finalDestBin))
+                {
+                    query += format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d AND bin_id=%d ORDER BY id DESC LIMIT 1;", "statistics_bins", scColumn, scColumn, machineId, finalDestBin.getInt("bin_id"));
+                    query += format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d AND bin_id=%d ORDER BY id DESC LIMIT 1;", "statistics_bins_counter", scColumn, scColumn, machineId, finalDestBin.getInt("bin_id"));
+                    query += format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d AND bin_id=%d ORDER BY id DESC LIMIT 1;", "statistics_bins_hourly", scColumn, scColumn, machineId, finalDestBin.getInt("bin_id"));
+                }
+                if((destBin.getInt("reject_bin")!=1)&&(destBin!=finalDestBin))
+                {
+                    query += format("UPDATE %s SET %s=%s+1%s%s WHERE machine_id=%d AND bin_id=%d ORDER BY id DESC LIMIT 1;", "statistics_bins", scColumn, scColumn,recircUpdate,rejectUpdate, machineId, destBin.getInt("bin_id"));
+                    query += format("UPDATE %s SET %s=%s+1%s%s WHERE machine_id=%d AND bin_id=%d ORDER BY id DESC LIMIT 1;", "statistics_bins_counter", scColumn, scColumn,recircUpdate,rejectUpdate, machineId, destBin.getInt("bin_id"));
+                    query += format("UPDATE %s SET %s=%s+1%s%s WHERE machine_id=%d AND bin_id=%d ORDER BY id DESC LIMIT 1;", "statistics_bins_hourly", scColumn, scColumn,recircUpdate,rejectUpdate, machineId, destBin.getInt("bin_id"));
+                }
+            }
+        }
+        else{
+            logger.error("DestBin or FinalDestBin is null");
+        }
+        dbHandler.append(query);
         return true;
     }
 
