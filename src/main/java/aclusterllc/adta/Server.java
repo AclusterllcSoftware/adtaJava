@@ -12,6 +12,8 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.Statement;
 import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -405,6 +407,24 @@ public class Server implements Runnable {
                 int deviceId = Integer.parseInt(params.get("deviceId").toString());
                 int command = Integer.parseInt(params.get("command").toString());
                 int parameter1 = Integer.parseInt(params.get("parameter1").toString());
+                //reset Command
+                if(deviceId==86 && command==0){
+                    try {
+                        Connection dbConn = DataSource.getConnection();
+                        Statement stmt = dbConn.createStatement();
+                        String insertQuery="INSERT IGNORE INTO statistics_counter (machine_id) SELECT DISTINCT machine_id FROM machines;INSERT IGNORE INTO statistics_bins_counter (machine_id,bin_id) SELECT DISTINCT machine_id,bin_id FROM bins;";
+                        dbConn.setAutoCommit(false);
+                        stmt.execute(insertQuery);
+                        dbConn.commit();
+                        dbConn.setAutoCommit(true);
+                        stmt.close();
+                        dbConn.close();
+                    }
+                    catch (Exception e) {
+                        logger.error(e.toString());
+                    }
+                }
+
                 byte[] messageBytes= new byte[]{
                         0, 0, 0, 123, 0, 0, 0, 20,
                         (byte) (deviceId >> 24),(byte) (deviceId >> 16),(byte) (deviceId >> 8),(byte) (deviceId),
