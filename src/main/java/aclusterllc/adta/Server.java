@@ -287,6 +287,17 @@ public class Server implements Runnable {
                 sendMessage(clientName, response.toString());
                 break;
             }
+            case "getStatisticsCounterLast": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                JSONObject params= (JSONObject) jsonObject.get("params");
+                JSONObject response=new JSONObject();
+                response.put("type","getStatisticsCounterLast");
+                response.put("machineId",machineId);
+                response.put("statistics",serverDBHandler.getStatisticsCounterLast(machineId));
+                sendMessage(clientName, response.toString());
+                break;
+            }
+
             case "getStatisticsBins": {
                 int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
                 JSONObject params= (JSONObject) jsonObject.get("params");
