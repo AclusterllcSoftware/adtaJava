@@ -1540,7 +1540,7 @@ public class ServerDBHandler {
                 JSONObject row=new JSONObject();
                 row.put("id",rs.getInt("id"));
                 row.put("bin_id",rs.getInt("bin_id"));
-                row.put("recirc_count",rs.getInt("recirc_count"));
+                row.put("recirc",rs.getInt("recirc"));
                 row.put("reject",rs.getInt("reject"));
                 row.put("sc0",rs.getInt("sc0"));
                 row.put("sc1",rs.getInt("sc1"));
@@ -1563,6 +1563,7 @@ public class ServerDBHandler {
                 resultsJsonArray.put(row);
 
             }
+            System.out.println(resultsJsonArray);
             rs.close();
             stmt.close();
             dbConn.close();
@@ -1584,7 +1585,7 @@ public class ServerDBHandler {
                 JSONObject row=new JSONObject();
                 row.put("id",rs.getInt("id"));
                 row.put("bin_id",rs.getInt("bin_id"));
-                row.put("recirc_count",rs.getInt("recirc_count"));
+                row.put("recirc",rs.getInt("recirc"));
                 row.put("reject",rs.getInt("reject"));
                 row.put("sc0",rs.getInt("sc0"));
                 row.put("sc1",rs.getInt("sc1"));
@@ -1628,7 +1629,7 @@ public class ServerDBHandler {
                 JSONObject row=new JSONObject();
                 row.put("id",rs.getInt("id"));
                 row.put("bin_id",rs.getInt("bin_id"));
-                row.put("recirc_count",rs.getInt("recirc_count"));
+                row.put("recirc",rs.getInt("recirc"));
                 row.put("reject",rs.getInt("reject"));
                 row.put("sc0",rs.getInt("sc0"));
                 row.put("sc1",rs.getInt("sc1"));
