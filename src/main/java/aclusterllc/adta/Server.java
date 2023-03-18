@@ -235,10 +235,13 @@ public class Server implements Runnable {
                 JSONObject basic_info = new JSONObject();
                 basic_info.put("alarmsInfo",DBCache.alarmsInfo);
                 basic_info.put("binsInfo",DBCache.binsInfo);
+                basic_info.put("boardsInfo",DBCache.boardsInfo);
+                basic_info.put("board_iosInfo",DBCache.board_iosInfo);
                 basic_info.put("conveyorsInfo",DBCache.conveyorsInfo);
                 basic_info.put("devicesInfo",DBCache.devicesInfo);
                 basic_info.put("inputsInfo",DBCache.inputsInfo);
                 basic_info.put("motorsInfo",DBCache.motorsInfo);
+                basic_info.put("parametersInfo",DBCache.parametersInfo);
                 basic_info.put("scsInfo",DBCache.scsInfo);
 
                 JSONObject response = new JSONObject();
@@ -444,6 +447,17 @@ public class Server implements Runnable {
                 response.put("type","getProductsHistory");
                 response.put("machineId",machineId);
                 response.put("products",serverDBHandler.getProductsHistory(machineId,from_timestamp,to_timestamp));
+                sendMessage(clientName, response.toString());
+                break;
+            }
+            case "getMaintViewData": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                //JSONObject params= (JSONObject) jsonObject.get("params");
+                JSONObject response=new JSONObject();
+                response.put("type","getMaintViewData");
+                response.put("machineId",machineId);
+                response.put("inputsStates",serverDBHandler.getInputsStates(machineId));
+                response.put("outputStates",serverDBHandler.getOuputsStates(machineId));
                 sendMessage(clientName, response.toString());
                 break;
             }

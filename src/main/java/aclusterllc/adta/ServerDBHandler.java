@@ -1682,6 +1682,31 @@ public class ServerDBHandler {
         }
         return binStates;
     }
+    public JSONObject getOuputsStates(int machineId){
+        JSONObject resultJsonObject = new JSONObject();
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String query = String.format("SELECT id,output_id,state FROM output_states WHERE machine_id=%d", machineId);
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next())
+            {
+                JSONObject row=new JSONObject();
+                row.put("id",rs.getInt("id"));
+                row.put("output_id",rs.getInt("output_id"));
+                row.put("state",rs.getInt("state"));
+                row.put("machineId",machineId);
+                resultJsonObject.put(machineId+"_"+rs.getString("output_id"),row);
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return resultJsonObject;
+    }
     public JSONObject getInputsStates(int machineId){
         JSONObject resultJsonObject = new JSONObject();
         try {

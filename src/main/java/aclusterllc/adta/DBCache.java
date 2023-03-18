@@ -55,6 +55,9 @@ public class DBCache {
     public static final JSONObject scsInfo = new JSONObject();
     public static final JSONObject motorsInfo = new JSONObject();
     public static final JSONObject motorsCurrentSpeed = new JSONObject();
+    public static final JSONObject boardsInfo = new JSONObject();
+    public static final JSONObject board_iosInfo = new JSONObject();
+    public static final JSONObject parametersInfo = new JSONObject();
 
     private DBCache(){
         try {
@@ -154,6 +157,37 @@ public class DBCache {
                 item.put("reject_bin",rs.getString("reject_bin"));
                 binsInfo.put(rs.getString("machine_id")+"_"+rs.getString("bin_id"),item);
             }
+            String boardsQuery = "SELECT * FROM boards WHERE 1";
+            rs = stmt.executeQuery(boardsQuery);
+            while (rs.next())
+            {
+                JSONObject item=new JSONObject();
+                item.put("id",rs.getString("id"));
+                item.put("machine_id",rs.getString("machine_id"));
+                item.put("board_id",rs.getString("board_id"));
+                item.put("board_type",rs.getString("board_type"));
+                item.put("location",rs.getString("location"));
+                item.put("slot",rs.getString("slot"));
+                item.put("description",rs.getString("description"));
+                boardsInfo.put(rs.getString("machine_id")+"_"+rs.getString("board_id"),item);
+            }
+            String boardIosQuery = "SELECT * FROM board_ios WHERE 1";
+            rs = stmt.executeQuery(boardIosQuery);
+            while (rs.next())
+            {
+                JSONObject item=new JSONObject();
+                item.put("id",rs.getString("id"));
+                item.put("machine_id",rs.getString("machine_id"));
+                item.put("board_id",rs.getString("board_id"));
+                item.put("change_allowed",rs.getString("change_allowed"));
+                item.put("input_id",rs.getString("input_id"));
+                item.put("output_id",rs.getString("output_id"));
+                item.put("in",rs.getString("in"));
+                item.put("description",rs.getString("description"));
+                item.put("tag",rs.getString("tag"));
+                item.put("terminal",rs.getString("terminal"));
+                board_iosInfo.put(rs.getString("id"),item);
+            }
 
             String conveyorQuery = "SELECT * FROM conveyors WHERE 1";
             rs = stmt.executeQuery(conveyorQuery);
@@ -206,6 +240,7 @@ public class DBCache {
                 item.put("machine_id",rs.getString("machine_id"));
                 item.put("device_type",rs.getString("device_type"));
                 item.put("device_name",rs.getString("device_name"));
+                item.put("ip_address",rs.getString("ip_address"));
                 item.put("gui_device_id",rs.getString("gui_device_id"));
                 devicesInfo.put(rs.getString("machine_id")+"_"+rs.getString("device_id"),item);
 
@@ -305,6 +340,19 @@ public class DBCache {
                 item.put("speed_min",rs.getString("speed_min"));
                 motorsInfo.put(rs.getString("machine_id")+"_"+rs.getString("motor_id"),item);
                 motorsCurrentSpeed.put(rs.getString("machine_id")+"_"+rs.getString("motor_id"),0);
+            }
+            String parametersQuery = "SELECT * FROM parameters WHERE 1";
+            rs = stmt.executeQuery(parametersQuery);
+            while (rs.next())
+            {
+                JSONObject item=new JSONObject();
+                item.put("id",rs.getString("id"));
+                item.put("machine_id",rs.getString("machine_id"));
+                item.put("param_id",rs.getString("param_id"));
+                item.put("description",rs.getString("description"));
+                item.put("value",rs.getString("value"));
+                item.put("unit",rs.getString("unit"));
+                parametersInfo.put(rs.getString("machine_id")+"_"+rs.getString("param_id"),item);
             }
 
             String scsQuery = "SELECT * FROM scs WHERE 1";
