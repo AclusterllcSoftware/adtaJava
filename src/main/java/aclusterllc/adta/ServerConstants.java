@@ -89,6 +89,7 @@ public class ServerConstants {
         MESSAGE_IDS.put(48, "PieceInducted Message");
         //MESSAGE_IDS.put(50, "EStop Message");
         MESSAGE_IDS.put(53, "Outputs Message");
+        MESSAGE_IDS.put(54, "Param Value Message");
 
 
         MESSAGE_IDS.put(120, "SetMode Message");

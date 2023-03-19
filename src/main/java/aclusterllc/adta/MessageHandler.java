@@ -657,6 +657,12 @@ public class MessageHandler {
                     dbHandler.append(query);
 
                 }
+                else if(messageId==54){
+                    long paramId = bytesToLong(Arrays.copyOfRange(dataBytes, 0, 4));
+                    long value = bytesToLong(Arrays.copyOfRange(dataBytes, 4, 8));
+                    String query = format("UPDATE %s SET value=%d WHERE machine_id=%d AND param_id=%d;","parameters",value,machineId,paramId);
+                    dbHandler.append(query);
+                }
                 else{
                     returnMsg.remove(0);//to remove return message notification from textarea
 

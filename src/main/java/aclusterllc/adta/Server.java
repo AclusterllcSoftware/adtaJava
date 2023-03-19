@@ -458,7 +458,22 @@ public class Server implements Runnable {
                 response.put("machineId",machineId);
                 response.put("inputsStates",serverDBHandler.getInputsStates(machineId));
                 response.put("outputStates",serverDBHandler.getOuputsStates(machineId));
+                response.put("parameterValues",serverDBHandler.getParameterValues(machineId));
                 sendMessage(clientName, response.toString());
+                break;
+            }
+            case "sendSetParamMessage": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                JSONObject params= (JSONObject) jsonObject.get("params");
+                int paramId = Integer.parseInt(params.get("paramId").toString());
+                int value = Integer.parseInt(params.get("value").toString());
+                byte[] messageBytes= new byte[]{
+                        0, 0, 0, 115, 0, 0, 0, 20,0,0,0,0,
+                        (byte) (paramId >> 24),(byte) (paramId >> 16),(byte) (paramId >> 8),(byte) (paramId),
+                        (byte) (value >> 24),(byte) (value >> 16),(byte) (value >> 8),(byte) (value)
+                };
+                Client client = cmClients.get(machineId);
+                client.sendBytes(messageBytes);
                 break;
             }
             //--------------------------

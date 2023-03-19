@@ -1707,6 +1707,30 @@ public class ServerDBHandler {
         }
         return resultJsonObject;
     }
+    public JSONObject getParameterValues(int machineId){
+        JSONObject resultJsonObject = new JSONObject();
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String query = String.format("SELECT param_id,value FROM parameters WHERE machine_id=%d", machineId);
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next())
+            {
+                JSONObject row=new JSONObject();
+                row.put("param_id",rs.getInt("param_id"));
+                row.put("value",rs.getInt("value"));
+                row.put("machineId",machineId);
+                resultJsonObject.put(machineId+"_"+rs.getString("param_id"),row);
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return resultJsonObject;
+    }
     public JSONObject getInputsStates(int machineId){
         JSONObject resultJsonObject = new JSONObject();
         try {
