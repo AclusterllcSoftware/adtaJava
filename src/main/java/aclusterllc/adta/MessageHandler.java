@@ -14,6 +14,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static java.lang.String.format;
+
 
 public class MessageHandler {
     private DBCache dbCache = DBCache.getInstance();
@@ -642,6 +644,18 @@ public class MessageHandler {
                         DBCache.removeSQLId(mailId);
                         returnMsg.add("DB operations done");
                     }
+                }
+                else if(messageId==53){
+                    int[] bitSeq = bitSequenceTranslator(dataBytes, 4);
+                    String query = "INSERT INTO output_states (`machine_id`, `output_id`, `state`,`created_at`) VALUES ";
+                    List<String> insertList = new ArrayList<>();
+                    for(int i=0;i<bitSeq.length;i++){
+                        String insertString = format("(%d, %d, %d,CURRENT_TIMESTAMP())", machineId, i+1, bitSeq[i]);
+                        insertList.add(insertString);
+                    }
+                    query+=(String.join(", ", insertList)+" ON DUPLICATE KEY UPDATE state=VALUES(state),created_at=VALUES(created_at)");
+                    dbHandler.append(query);
+
                 }
                 else{
                     returnMsg.remove(0);//to remove return message notification from textarea
