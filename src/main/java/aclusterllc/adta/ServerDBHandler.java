@@ -1230,49 +1230,7 @@ public class ServerDBHandler {
         return mainJson;
     }
 
-    public JSONObject loginUser(int machineId, String username, String password) throws ParseException {
-        JSONObject mainJson = new JSONObject();
-        mainJson.put("type", "login_user");
-        JSONObject userJson = new JSONObject();
 
-        try {
-            dbConn = DataSource.getConnection();
-            String userQuery = String.format("SELECT name, role FROM users WHERE username='%s' AND password='%s' LIMIT 1", username, password);
-            Statement stmt = dbConn.createStatement();
-            ResultSet rs = stmt.executeQuery(userQuery);
-
-            if (!rs.next() ) {
-                userJson.put("success", 0);
-            } else {
-                userJson.put("success", 1);
-                do {
-                    //System.out.println("Getting here");
-                    userJson.put("name", rs.getString("name"));
-                    userJson.put("role", rs.getInt("role"));
-                } while (rs.next());
-
-//                while (rs.next()) {
-//                    System.out.println("Getting here");
-//                    userJson.put("name", rs.getString("name"));
-//                    userJson.put("role", rs.getInt("role"));
-//                }
-            }
-
-            mainJson.put("result", userJson);
-
-            rs.close();
-            stmt.close();
-            dbConn.close(); // connection close
-
-        } catch (SQLException e) {
-            //e.printStackTrace();
-            logger.error(e.toString());
-        }
-
-        mainJson.put("result", userJson);
-
-        return mainJson;
-    }
 
     public int getMachineMode(Statement stmt, int machineId) throws SQLException {
         int machineMode = 0;
@@ -1682,7 +1640,7 @@ public class ServerDBHandler {
         }
         return binStates;
     }
-    public JSONObject getOuputsStates(int machineId){
+    public JSONObject getOutputsStates(int machineId){
         JSONObject resultJsonObject = new JSONObject();
         try {
             Connection dbConn = DataSource.getConnection();
@@ -1903,5 +1861,31 @@ public class ServerDBHandler {
             logger.error(e.toString());
         }
         return resultsJsonArray;
+    }
+    public JSONObject getLoginUser(String username, String password){
+        JSONObject resultJsonObject = new JSONObject();
+        resultJsonObject.put("status",false);
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String query = String.format("SELECT id,name, role FROM users WHERE username='%s' AND password='%s' LIMIT 1", username, password);
+            ResultSet rs = stmt.executeQuery(query);
+            if (rs.next())
+            {
+                resultJsonObject.put("status",true);
+                JSONObject row=new JSONObject();
+                row.put("id",rs.getInt("id"));
+                row.put("name",rs.getString("name"));
+                row.put("role",rs.getInt("role"));
+                resultJsonObject.put("user",row);
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return resultJsonObject;
     }
 }

@@ -457,7 +457,7 @@ public class Server implements Runnable {
                 response.put("type","getMaintViewData");
                 response.put("machineId",machineId);
                 response.put("inputsStates",serverDBHandler.getInputsStates(machineId));
-                response.put("outputStates",serverDBHandler.getOuputsStates(machineId));
+                response.put("outputStates",serverDBHandler.getOutputsStates(machineId));
                 response.put("parameterValues",serverDBHandler.getParameterValues(machineId));
                 sendMessage(clientName, response.toString());
                 break;
@@ -471,6 +471,30 @@ public class Server implements Runnable {
                         0, 0, 0, 115, 0, 0, 0, 20,0,0,0,0,
                         (byte) (paramId >> 24),(byte) (paramId >> 16),(byte) (paramId >> 8),(byte) (paramId),
                         (byte) (value >> 24),(byte) (value >> 16),(byte) (value >> 8),(byte) (value)
+                };
+                Client client = cmClients.get(machineId);
+                client.sendBytes(messageBytes);
+                break;
+            }
+            case "getLoginUser": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                JSONObject params= (JSONObject) jsonObject.get("params");
+                String username = params.getString("username");
+                String password = params.getString("password");
+
+                JSONObject response=new JSONObject();
+                response.put("type","getLoginUser");
+                response.put("machineId",machineId);
+                response.put("loginInfo",serverDBHandler.getLoginUser(username,password));
+                sendMessage(clientName, response.toString());
+                break;
+            }
+            case "changeMode": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                JSONObject params= (JSONObject) jsonObject.get("params");
+                int mode = Integer.parseInt(params.get("mode").toString());
+                byte[] messageBytes= new byte[]{
+                        0, 0, 0, 120, 0, 0, 0, 9,(byte)mode
                 };
                 Client client = cmClients.get(machineId);
                 client.sendBytes(messageBytes);
@@ -575,18 +599,7 @@ public class Server implements Runnable {
                 sendMessage(clientName, response.toString());
                 break;
             }
-            case "change_mode" : {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                int mode = Integer.parseInt(jsonObject.get("mode").toString());
 
-                Client client = cmClients.get(machineId);
-                try {
-                    client.sendMessage(120, mode, 0);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                break;
-            }
             case "change_induct" : {
                 int machineId = Integer.parseInt(jsonObject.get("id").toString());
                 int mode = Integer.parseInt(jsonObject.get("mode").toString());
@@ -627,15 +640,7 @@ public class Server implements Runnable {
                 }
                 break;
             }
-            case "login_user" : {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                String username = jsonObject.get("username").toString();
-                String password = jsonObject.get("password").toString();
-                JSONObject response = serverDBHandler.loginUser(machineId, username, password);
-                //System.out.println(response);
-                sendMessage(clientName, response.toString());
-                break;
-            }
+
         }
     }
 
