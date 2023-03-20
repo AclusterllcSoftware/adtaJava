@@ -456,8 +456,8 @@ public class Server implements Runnable {
                 JSONObject response=new JSONObject();
                 response.put("type","getMaintViewData");
                 response.put("machineId",machineId);
-                response.put("inputsStates",serverDBHandler.getInputsStates(machineId));
-                response.put("outputStates",serverDBHandler.getOutputsStates(machineId));
+                response.put("ioInputsStates",serverDBHandler.getIoInputsStates(machineId));
+                response.put("ioOutputStates",serverDBHandler.getIoOutputsStates(machineId));
                 response.put("parameterValues",serverDBHandler.getParameterValues(machineId));
                 sendMessage(clientName, response.toString());
                 break;
