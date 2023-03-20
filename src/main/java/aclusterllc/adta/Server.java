@@ -489,6 +489,19 @@ public class Server implements Runnable {
                 sendMessage(clientName, response.toString());
                 break;
             }
+            case "changeCurrentUserPassword": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                JSONObject params= (JSONObject) jsonObject.get("params");
+                int id = Integer.parseInt(params.get("id").toString());
+                String password = params.get("password").toString();
+                String password_new = params.get("password_new").toString();
+                JSONObject response=new JSONObject();
+                response.put("type","changeCurrentUserPassword");
+                response.put("machineId",machineId);
+                response.put("changeInfo",serverDBHandler.changeCurrentUserPassword(id,password,password_new));
+                sendMessage(clientName, response.toString());
+                break;
+            }
             case "changeMode": {
                 int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
                 JSONObject params= (JSONObject) jsonObject.get("params");

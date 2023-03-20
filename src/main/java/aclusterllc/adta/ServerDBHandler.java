@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import static java.lang.Math.ceil;
 import static java.lang.Math.floorDiv;
+import static java.lang.String.format;
 
 public class ServerDBHandler {
 
@@ -1878,6 +1879,49 @@ public class ServerDBHandler {
                 row.put("name",rs.getString("name"));
                 row.put("role",rs.getInt("role"));
                 resultJsonObject.put("user",row);
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return resultJsonObject;
+    }
+    public JSONObject changeCurrentUserPassword(int id, String password,String password_new){
+        System.out.println(id);
+        JSONObject resultJsonObject = new JSONObject();
+        resultJsonObject.put("status",false);
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String query = String.format("SELECT id,password FROM users WHERE id='%d' LIMIT 1", id);
+            ResultSet rs = stmt.executeQuery(query);
+            if (rs.next())
+            {
+                if(rs.getString("password").equals(password)){
+                    Statement stmt2 = dbConn.createStatement();
+                    String updateQuery = format("UPDATE %s SET password='%s' WHERE id=%d;","users",password_new,id);
+                    dbConn.setAutoCommit(false);
+                    int num_row = stmt.executeUpdate(updateQuery);
+                    dbConn.commit();
+                    dbConn.setAutoCommit(true);
+                    stmt2.close();
+                    if(num_row>0){
+                        resultJsonObject.put("status",true);
+                        resultJsonObject.put("message","Successfully Changed");
+                    }
+                    else{
+                        resultJsonObject.put("message","Failed to change password");
+                    }
+                }
+                else{
+                    resultJsonObject.put("messages","Old Password did not matched.");
+                }
+            }
+            else{
+                resultJsonObject.put("messages","User not found.");
             }
             rs.close();
             stmt.close();

@@ -22,13 +22,61 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Test {
     public static void main(String[] args){
-        CustomMap<Long, Long> mailIdtoSQLId = new CustomMap<>();
-        mailIdtoSQLId.put(1L, 2L);
-        if(mailIdtoSQLId.getKey(1L)!=null){
-            System.out.println("exits");
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String insertQueryHourly= "UPDATE statistics_bins_hourly set sc0=2 where sc1=1;";
+            dbConn.setAutoCommit(false);
+            int num_row = stmt.executeUpdate(insertQueryHourly);
+            System.out.println(num_row);
+            dbConn.commit();
+            dbConn.setAutoCommit(true);
+            stmt.close();
+            dbConn.close(); // connection close
         }
-        else
-        System.out.println(mailIdtoSQLId.getKey(2L));
+        catch (Exception e) {
+            System.out.println("Error");
+        }
+    }
+    public static void main_db_update(String[] args){
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String insertQueryHourly= "UPDATE statistics_bins_hourly set sc0=2 where sc1=1;";
+            dbConn.setAutoCommit(false);
+            int num_row = stmt.executeUpdate(insertQueryHourly, Statement.RETURN_GENERATED_KEYS);
+            System.out.println(num_row);
+            dbConn.commit();
+            dbConn.setAutoCommit(true);
+            stmt.close();
+            dbConn.close(); // connection close
+        }
+        catch (Exception e) {
+            System.out.println("Error");
+        }
+    }
+    public static void main_db_insert(String[] args){
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String insertQueryHourly= "INSERT IGNORE INTO statistics_bins_hourly (machine_id,bin_id) SELECT DISTINCT machine_id,bin_id FROM bins;";
+            dbConn.setAutoCommit(false);
+            int num_row = stmt.executeUpdate(insertQueryHourly, Statement.RETURN_GENERATED_KEYS);
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next()){
+                System.out.println(rs.getString(1)+" "+num_row);
+            }
+            while (rs.next()){
+                System.out.println(rs.getString(1)+" "+num_row);
+            }
+            dbConn.commit();
+            dbConn.setAutoCommit(true);
+            stmt.close();
+            dbConn.close(); // connection close
+        }
+        catch (Exception e) {
+            System.out.println("Error");
+        }
     }
     public static void main_5(String[] args){
         //String xmlMessage="<PB id=\"1549\"><heartbeat>3147453399217159</heartbeat></PB>";
