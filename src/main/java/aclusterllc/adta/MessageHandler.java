@@ -302,6 +302,18 @@ public class MessageHandler {
                     boolean dbOperationDone = false;
                     if(messageId == 2 || messageId == 14) {
                         dbOperationDone = dbWrapper.processInputsDevicesStates(intBitSeq, messageId, machineId);
+                        //io_input_states start included by shaiful to insert into io_input_states table
+                        if(messageId==2){
+                            String query = "INSERT INTO io_input_states (`machine_id`, `input_id`, `state`,`created_at`) VALUES ";
+                            List<String> insertList = new ArrayList<>();
+                            for(int i=0;i<intBitSeq.length;i++){
+                                String insertString = format("(%d, %d, %d,CURRENT_TIMESTAMP())", machineId, i+1, intBitSeq[i]);
+                                insertList.add(insertString);
+                            }
+                            query+=(String.join(", ", insertList)+" ON DUPLICATE KEY UPDATE state=VALUES(state),created_at=VALUES(created_at)");
+                            dbHandler.append(query);
+                        }
+                        //end io_input_states
                     }
                     else if(messageId == 4 || messageId == 5) {
                         if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1){
@@ -390,6 +402,12 @@ public class MessageHandler {
                         if(messageId == 3 || messageId == 15 || messageId == 43 || messageId == 47) {
                             if(dbWrapper.processSingleInputDeviceState(idLong, stateValue, messageId, machineId)) {
                                 returnMsg.add("DB operations done");
+                                //io_input_states start included by shaiful to insert into io_input_states table
+
+                                String query =  format("INSERT INTO io_input_states (`machine_id`, `input_id`, `state`,`created_at`) " +
+                                        "VALUES (%d, %d, %d,CURRENT_TIMESTAMP()) " +
+                                        "ON DUPLICATE KEY UPDATE state=VALUES(state),created_at=VALUES(created_at)",machineId,idLong,stateValue);
+                                dbHandler.append(query);
                             }
                         } else {
                             if (dbWrapper.processSingleBinState(idLong, stateValue, messageId, machineId)) {
