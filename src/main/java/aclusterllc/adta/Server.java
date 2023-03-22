@@ -401,6 +401,7 @@ public class Server implements Runnable {
                 response.put("machineId",machineId);
                 response.put("sort_manager_id",sort_manager_id);
                 response.put("inputsStates",serverDBHandler.getInputsStates(machineId));
+                response.put("binsStates",serverDBHandler.getBinsStates(machineId));
                 sendMessage(clientName, response.toString());
                 break;
             }
