@@ -253,7 +253,17 @@ public class Server implements Runnable {
             case "send_ip_list": {
                 JSONObject response = serverDBHandler.getMachineList();
                 sendMessage(clientName, response.toString());
-
+                break;
+            }
+            case "getCommonStatus": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                JSONObject response=new JSONObject();
+                response.put("type","getCommonStatus");
+                response.put("machineId",machineId);
+                response.put("disconnectedDeviceCounter",serverDBHandler.getDisconnectedDeviceCounter(machineId));
+                response.put("machineMode",serverDBHandler.getMachineMode(machineId));
+                response.put("activeAlarms",serverDBHandler.getActiveAlarms(machineId));
+                sendMessage(clientName, response.toString());
                 break;
             }
             case "getStatistics": {
@@ -579,12 +589,7 @@ public class Server implements Runnable {
                 sendMessage(clientName, response.toString());
                 break;
             }
-            case "device_status": {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                JSONObject response = serverDBHandler.getDeviceStatus(machineId);
-                sendMessage(clientName, response.toString());
-                break;
-            }
+
             case "package_list": {
                 int machineId = Integer.parseInt(jsonObject.get("id").toString());
                 JSONObject response = serverDBHandler.getPackageList(machineId);

@@ -1008,52 +1008,7 @@ public class ServerDBHandler {
         return mainJson;
     }
 
-    public JSONObject getDeviceStatus(int machineId) throws ParseException {
-        JSONObject mainJson = new JSONObject();
-        mainJson.put("type", "device_status");
 
-        try {
-            dbConn = DataSource.getConnection();
-            //device_id=1 for 360/ingram
-            //device_id=2 for main plz exclude it too
-
-            String deviceStatesQuery = String.format("SELECT COUNT(id) AS total FROM device_states WHERE machine_id=%d AND device_state=0 AND device_id NOT IN (SELECT device_id FROM devices WHERE machine_id=%d AND (gui_device_id=0 OR device_id=1 OR device_id=2)) LIMIT 1", machineId, machineId);
-            Statement stmt = dbConn.createStatement();
-            ResultSet rs = stmt.executeQuery(deviceStatesQuery);
-
-            JSONObject statesJson = new JSONObject();
-            int disconnectedDevicesCount = 0;
-            if(rs.next())
-            {
-                disconnectedDevicesCount = rs.getInt("total");
-            }
-            if(ServerConstants.plcConnectStatus.get(machineId) == 0) disconnectedDevicesCount++;
-            if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1){
-                if(ServerConstants.threeSixtyClientConnected == 0) disconnectedDevicesCount++;
-            }
-            if(Integer.parseInt(ServerConstants.configuration.get("ingram_enable"))==1){
-                if(ServerConstants.serverForIngramConnected == 0) disconnectedDevicesCount++;
-            }
-            statesJson.put("total", disconnectedDevicesCount);
-
-            int machineMode = getMachineMode(stmt, machineId);
-
-            statesJson.put("mode", machineMode);
-
-            mainJson.put("result", statesJson);
-
-
-            rs.close();
-            stmt.close();
-            dbConn.close(); // connection close
-
-        } catch (SQLException e) {
-            //e.printStackTrace();
-            logger.error(e.toString());
-        }
-
-        return mainJson;
-    }
     public JSONObject getSettings(int machineId) throws ParseException {
         JSONObject mainJson = new JSONObject();
         mainJson.put("type", "settings");
@@ -1956,5 +1911,33 @@ public class ServerDBHandler {
             logger.error(e.toString());
         }
         return resultJsonObject;
+    }
+    public int getDisconnectedDeviceCounter(int machineId){
+        int totalDisconnected=0;
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String query = String.format("SELECT COUNT(id) AS totalDisconnected FROM device_states WHERE machine_id=%d AND device_state=0 AND device_id NOT IN (SELECT device_id FROM devices WHERE machine_id=%d AND (gui_device_id=0 OR device_id=1 OR device_id=2)) LIMIT 1", machineId, machineId);
+            ResultSet rs = stmt.executeQuery(query);
+
+            if(rs.next())
+            {
+                totalDisconnected = rs.getInt("totalDisconnected");
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        if(ServerConstants.plcConnectStatus.get(machineId) == 0) totalDisconnected++;
+//        if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1){
+//            if(ServerConstants.threeSixtyClientConnected == 0) totalDisconnected++;
+//        }
+//        if(Integer.parseInt(ServerConstants.configuration.get("ingram_enable"))==1){
+//            if(ServerConstants.serverForIngramConnected == 0) totalDisconnected++;
+//        }
+        return totalDisconnected;
     }
 }
