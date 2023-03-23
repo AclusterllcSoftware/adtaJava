@@ -1116,7 +1116,6 @@ public class ServerDBHandler {
             //e.printStackTrace();
             logger.error(e.toString());
         }
-        System.out.println(responseJson);
         return responseJson;
     }
     public JSONObject getFilteredPackageList(int machineId, long startTimestamp, long endTimestamp, String sortingCode) throws ParseException {
@@ -1477,7 +1476,6 @@ public class ServerDBHandler {
                 resultsJsonArray.put(row);
 
             }
-            System.out.println(resultsJsonArray);
             rs.close();
             stmt.close();
             dbConn.close();
@@ -1870,7 +1868,6 @@ public class ServerDBHandler {
         return resultJsonObject;
     }
     public JSONObject changeCurrentUserPassword(int id, String password,String password_new){
-        System.out.println(id);
         JSONObject resultJsonObject = new JSONObject();
         resultJsonObject.put("status",false);
         try {
