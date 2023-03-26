@@ -1583,7 +1583,11 @@ public class ServerDBHandler {
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next())
             {
-                binStates.put(rs.getString("bin_id"),rs.getInt("event_type"));
+                //if state 4 then no more update
+                if(!(binStates.has(rs.getString("bin_id")) && (binStates.getInt(rs.getString("bin_id"))==4))){
+                    binStates.put(rs.getString("bin_id"),rs.getInt("event_type"));
+                }
+
             }
             rs.close();
             stmt.close();
