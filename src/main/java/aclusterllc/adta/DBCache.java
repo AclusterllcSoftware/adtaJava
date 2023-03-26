@@ -470,64 +470,25 @@ public class DBCache {
                 estop_locations.put(rs.getString("combo_id"),rs.getString("name"));
             }
             String statisticsTbl = "statistics";
-            boolean insertRow = false;
-            Statement stmt2 = dbConn.createStatement();
-            //inserting statistics tables initial row
-            String event_5min_Query = format("SELECT created_at FROM %s ORDER BY id DESC LIMIT 1", statisticsTbl);
-            ResultSet rs2 = stmt2.executeQuery(event_5min_Query);
-            if(rs2.next()) {
-                String createdAt = rs2.getTimestamp("created_at").toString();
-                Date createdAtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(createdAt);
-                Date nowDate = new Date();
-                long duration = getDuration(createdAtDate, nowDate, TimeUnit.SECONDS);
-                if(duration > 300) {
-                    insertRow = true;
-                }
-            }
-            else {
-                insertRow = true;
-            }
-            String insertQuery5min="";
-            //let assume for both bins and statistics minutes
-            if(insertRow){
-                insertQuery5min= "INSERT IGNORE INTO statistics (machine_id) SELECT DISTINCT machine_id FROM machines;INSERT IGNORE INTO statistics_bins (machine_id,bin_id) SELECT DISTINCT machine_id,bin_id FROM bins;";
-            }
 
-            insertRow = false;
-            //inserting statistics tables initial row
-            String event_hourly_Query = format("SELECT created_at FROM %s ORDER BY id DESC LIMIT 1", statisticsTbl);
-            rs2 = stmt2.executeQuery(event_hourly_Query);
-            if(rs2.next()) {
-                String createdAt = rs2.getTimestamp("created_at").toString();
-                Date createdAtDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(createdAt);
-                Date nowDate = new Date();
-                long duration = getDuration(createdAtDate, nowDate, TimeUnit.SECONDS);
-                if(duration > 3600) {
-                    insertRow = true;
-                }
-            }
-            else {
-                insertRow = true;
-            }
-            String insertQueryHourly="";
-            if(insertRow){
-                insertQueryHourly= "INSERT IGNORE INTO statistics_hourly (machine_id) SELECT DISTINCT machine_id FROM machines;INSERT IGNORE INTO statistics_bins_hourly (machine_id,bin_id) SELECT DISTINCT machine_id,bin_id FROM bins;";
-            }
-            String insertStatQuery=insertQuery5min+insertQueryHourly;
-            insertStatQuery+="INSERT IGNORE INTO statistics_counter (machine_id) SELECT DISTINCT machine_id FROM machines;INSERT IGNORE INTO statistics_bins_counter (machine_id,bin_id) SELECT DISTINCT machine_id,bin_id FROM bins;";
+            Statement stmt2 = dbConn.createStatement();
+            String insertStatQuery= "INSERT IGNORE INTO statistics (machine_id) SELECT DISTINCT machine_id FROM machines WHERE NOT EXISTS (SELECT * FROM statistics);" +
+                    "INSERT IGNORE INTO statistics_bins (machine_id,bin_id) SELECT DISTINCT machine_id,bin_id FROM bins WHERE NOT EXISTS (SELECT * FROM statistics_bins);" +
+                    "INSERT IGNORE INTO statistics_counter (machine_id) SELECT DISTINCT machine_id FROM machines WHERE NOT EXISTS (SELECT * FROM statistics_counter);" +
+                    "INSERT IGNORE INTO statistics_bins_counter (machine_id,bin_id) SELECT DISTINCT machine_id,bin_id FROM bins WHERE NOT EXISTS (SELECT * FROM statistics_bins_counter);" +
+                    "INSERT IGNORE INTO statistics_hourly (machine_id) SELECT DISTINCT machine_id FROM machines WHERE NOT EXISTS (SELECT * FROM statistics_hourly);" +
+                    "INSERT IGNORE INTO statistics_bins_hourly (machine_id,bin_id) SELECT DISTINCT machine_id,bin_id FROM bins WHERE NOT EXISTS (SELECT * FROM statistics_bins_hourly);";
             dbConn.setAutoCommit(false);
             stmt2.execute(insertStatQuery);
             dbConn.commit();
             dbConn.setAutoCommit(true);
-
-            rs2.close();
             stmt2.close();
 
             rs.close();
             stmt.close();
             dbConn.close(); // connection close
 
-        } catch (SQLException | ParseException e) {
+        } catch (SQLException e) {
             logger.error(e.toString());
             //e.printStackTrace();
         }
