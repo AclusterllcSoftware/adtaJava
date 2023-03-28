@@ -14,7 +14,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class DatabaseHandler implements Runnable {
-    static Connection dbConn = null;
     private final BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
     List<JSONObject> messageList = new ArrayList<>();
     private volatile boolean started = false;
@@ -68,7 +67,7 @@ public class DatabaseHandler implements Runnable {
                     }
                     else{
                         try {
-                            dbConn = DataSource.getConnection();
+                            Connection dbConn= DataSource.getConnection();
                             dbConn.setAutoCommit(false);
                             Statement stmt = dbConn.createStatement();
                             boolean done = stmt.execute(sql);
@@ -77,10 +76,11 @@ public class DatabaseHandler implements Runnable {
                             dbConn.setAutoCommit(true);
                             stmt.close();
                             dbConn.close(); // connection close
-                            logger.info(sql);
-                        } catch (SQLException e) {
+                        }
+                        catch (SQLException e) {
                             logger.error(e.toString());
-                            e.printStackTrace();
+                            logger.error("[SQL] "+sql);
+                            //e.printStackTrace();
                         }
                     }
 
