@@ -454,10 +454,16 @@ public class Server implements Runnable {
                 JSONObject params= (JSONObject) jsonObject.get("params");
                 long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
                 long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
+                int page = Integer.parseInt(params.get("page").toString());
+                int per_page = Integer.parseInt(params.get("per_page").toString());
                 JSONObject response=new JSONObject();
                 response.put("type","getProductsHistory");
                 response.put("machineId",machineId);
-                response.put("products",serverDBHandler.getProductsHistory(machineId,from_timestamp,to_timestamp));
+                response.put("page",page);
+                response.put("per_page",per_page);
+                JSONObject productsResults=serverDBHandler.getProductsHistory(machineId,from_timestamp,to_timestamp,page,per_page);
+                response.put("products",productsResults.get("products"));
+                response.put("totalRecords",productsResults.get("totalRecords"));
                 sendMessage(clientName, response.toString());
                 break;
             }

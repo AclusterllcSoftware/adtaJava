@@ -1801,14 +1801,26 @@ public class ServerDBHandler {
         }
         return machineMode;
     }
-    public JSONArray getProductsHistory(int machineId,long from_timestamp,long to_timestamp){
-        JSONArray resultsJsonArray = new JSONArray();
+    public JSONObject getProductsHistory(int machineId,long from_timestamp,long to_timestamp,int page,int per_page){
+        JSONObject resultJsonObject = new JSONObject();
+        long totalRecords=0;
+        JSONArray productsJsonArray = new JSONArray();
         try {
             Connection dbConn = DataSource.getConnection();
             Statement stmt = dbConn.createStatement();
 
-            String query = String.format("SELECT *,UNIX_TIMESTAMP(created_at) AS created_at_timestamp FROM product_history WHERE machine_id=%d AND UNIX_TIMESTAMP(created_at) BETWEEN %d AND %d ORDER BY id DESC", machineId,from_timestamp,to_timestamp);
-            ResultSet rs = stmt.executeQuery(query);
+
+            String totalQuery = String.format("SELECT COUNT(id) as totalRecords FROM product_history WHERE machine_id=%d AND UNIX_TIMESTAMP(created_at) BETWEEN %d AND %d", machineId,from_timestamp,to_timestamp);
+            ResultSet rs = stmt.executeQuery(totalQuery);
+            if(rs.next()){
+                totalRecords=rs.getLong("totalRecords");
+            }
+            String limitQuery="";
+            if(page>0){
+                limitQuery=String.format(" LIMIT %d OFFSET %d", per_page,(page-1)*per_page);
+            }
+            String query = String.format("SELECT *,UNIX_TIMESTAMP(created_at) AS created_at_timestamp FROM product_history WHERE machine_id=%d AND UNIX_TIMESTAMP(created_at) BETWEEN %d AND %d ORDER BY id DESC%s", machineId,from_timestamp,to_timestamp,limitQuery);
+            rs = stmt.executeQuery(query);
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
@@ -1834,7 +1846,7 @@ public class ServerDBHandler {
                 row.put("reason",rs.getInt("reason"));
                 row.put("created_at",rs.getString("created_at"));
                 row.put("created_at_timestamp",rs.getLong("created_at_timestamp"));
-                resultsJsonArray.put(row);
+                productsJsonArray.put(row);
             }
             rs.close();
             stmt.close();
@@ -1843,7 +1855,9 @@ public class ServerDBHandler {
         catch (Exception e) {
             logger.error(e.toString());
         }
-        return resultsJsonArray;
+        resultJsonObject.put("products",productsJsonArray);
+        resultJsonObject.put("totalRecords",totalRecords);
+        return resultJsonObject;
     }
     public JSONObject getLoginUser(String username, String password){
         JSONObject resultJsonObject = new JSONObject();
