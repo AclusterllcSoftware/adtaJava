@@ -30,32 +30,6 @@ public class ServerDBHandler {
             //e.printStackTrace();
         }
     }
-
-    public JSONObject getMachineList() {
-
-        JSONObject mainJson = new JSONObject();
-        mainJson.put("type", "ip_list");
-        JSONObject resultJson = new JSONObject();
-
-        for (Map.Entry<Integer, Map<String, String>> entry : dbCache.getMachineList().entrySet()) {
-            Map<String, String> v = entry.getValue();
-
-            int machineID = entry.getKey();
-            String ipAddress = v.get("ip_address");
-            String machineName = v.get("machine_name");
-            String maintenanceIp = v.get("maintenance_ip");
-
-            JSONObject machineJson = new JSONObject();
-            machineJson.put("ip_address", ipAddress);
-            machineJson.put("machine_name", machineName);
-            machineJson.put("maintenance_ip", maintenanceIp);
-
-            resultJson.put(String.valueOf(machineID), machineJson);
-        }
-
-        mainJson.put("result", resultJson);
-        return mainJson;
-    }
     public JSONObject getModSort(int machineId, int device_type, int device_number) throws ParseException {
         JSONObject mainJson = new JSONObject();
         mainJson.put("type", "mod_sort");

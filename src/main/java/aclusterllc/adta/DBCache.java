@@ -58,6 +58,7 @@ public class DBCache {
     public static final JSONObject boardsInfo = new JSONObject();
     public static final JSONObject board_iosInfo = new JSONObject();
     public static final JSONObject parametersInfo = new JSONObject();
+    public static final JSONObject machinesInfo = new JSONObject();
 
     private DBCache(){
         try {
@@ -451,7 +452,7 @@ public class DBCache {
                 }
             }
 
-            String machineQuery = "SELECT machine_id, ip_address, machine_name, port_number, maintenance_gui_ip FROM machines WHERE 1";
+            String machineQuery = "SELECT * FROM machines WHERE 1";
             rs = stmt.executeQuery(machineQuery);
             while (rs.next())
             {
@@ -462,6 +463,19 @@ public class DBCache {
                 singleMachine.put("maintenance_ip", rs.getString("maintenance_gui_ip"));
 
                 machineList.put(rs.getInt("machine_id"), singleMachine);
+
+                JSONObject item=new JSONObject();
+                item.put("id",rs.getString("id"));
+                item.put("machine_id",rs.getString("machine_id"));
+                item.put("machine_name",rs.getString("machine_name"));
+                item.put("ip_address",rs.getString("ip_address"));
+                item.put("port_number",rs.getString("port_number"));
+                item.put("site_name",rs.getString("site_name"));
+                item.put("maintenance_gui_ip",rs.getString("maintenance_gui_ip"));
+                item.put("machine_mode",rs.getString("machine_mode"));
+                item.put("machine_state",rs.getString("machine_state"));
+                machinesInfo.put(rs.getString("machine_id"),item);
+
             }
             String estopLocationQuery = "SELECT combo_id, name FROM estop_locations WHERE 1";
             rs = stmt.executeQuery(estopLocationQuery);

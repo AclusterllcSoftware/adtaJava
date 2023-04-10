@@ -243,15 +243,11 @@ public class Server implements Runnable {
                 basic_info.put("motorsInfo",DBCache.motorsInfo);
                 basic_info.put("parametersInfo",DBCache.parametersInfo);
                 basic_info.put("scsInfo",DBCache.scsInfo);
+                basic_info.put("machinesInfo",DBCache.machinesInfo);
 
                 JSONObject response = new JSONObject();
                 response.put("type","basic_info");
                 response.put("basic_info",basic_info);
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "send_ip_list": {
-                JSONObject response = serverDBHandler.getMachineList();
                 sendMessage(clientName, response.toString());
                 break;
             }
