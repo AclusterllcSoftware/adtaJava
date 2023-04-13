@@ -675,12 +675,33 @@ public class DatabaseWrapper {
     }
 
     public boolean processConfirmDestination(long mailId, int destination, int altDestination, int finalDestination, int reason, int machineId) {
+        String query="";
         List<Integer> possibleReasons=new ArrayList<>(Arrays.asList(0, 1, 3, 4, 5,6,7,8,9,10,12,14,16,17,18,21));
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String searchProduct = String.format("SELECT id FROM products WHERE machine_id=%d and mail_id=%d", machineId,mailId);
+            ResultSet rs = stmt.executeQuery(searchProduct);
+            if (!rs.next())
+            {
+                logger.error("[ConfirmDestination] Product Not Exits.MailId= "+mailId);
+                query += format("INSERT IGNORE INTO %s (`machine_id`, `mail_id`) VALUES (%d, %d);","products", machineId, mailId);
+                query += format("UPDATE %s SET total_read=total_read+1,no_code=no_code+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;","statistics",machineId);
+                query += format("UPDATE %s SET total_read=total_read+1,no_code=no_code+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;","statistics_hourly",machineId);
+                query += format("UPDATE %s SET total_read=total_read+1,no_code=no_code+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;","statistics_counter",machineId);
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
 
         String tbl = "products";
         String historyTbl = "product_history";
 
-        String query = format("INSERT INTO %s (`product_id`, " +
+        query+= format("INSERT INTO %s (`product_id`, " +
                         "`machine_id`, " +
                         "`mail_id`, " +
                         "`length`, " +
