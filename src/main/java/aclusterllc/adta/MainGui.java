@@ -109,7 +109,7 @@ public class MainGui {
         specialMessage.addItem(new ComboItem("Errors Message", 4));
         specialMessage.addItem(new ComboItem("Jams Message", 5));*/
 
-        JFrame frame = new JFrame("ADTA 1.0.11");
+        JFrame frame = new JFrame("ADTA 1.0.12");
         frame.setContentPane(this.mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();

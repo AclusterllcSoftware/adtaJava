@@ -526,6 +526,24 @@ public class Server implements Runnable {
                 client.sendBytes(messageBytes);
                 break;
             }
+            case "getAlarmsHistory": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                JSONObject params= (JSONObject) jsonObject.get("params");
+                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
+                int page = Integer.parseInt(params.get("page").toString());
+                int per_page = Integer.parseInt(params.get("per_page").toString());
+                JSONObject response=new JSONObject();
+                response.put("type","getAlarmsHistory");
+                response.put("machineId",machineId);
+                response.put("page",page);
+                response.put("per_page",per_page);
+                JSONObject alarmsResults=serverDBHandler.getAlarmsHistory(machineId,from_timestamp,to_timestamp,page,per_page);
+                response.put("alarms",alarmsResults.get("alarms"));
+                response.put("totalRecords",alarmsResults.get("totalRecords"));
+                sendMessage(clientName, response.toString());
+                break;
+            }
             //--------------------------
             case "mod_sort": {
                 int machineId = Integer.parseInt(jsonObject.get("id").toString());
@@ -542,20 +560,6 @@ public class Server implements Runnable {
                 int induct_id = Integer.parseInt(jsonObject.get("induct_number").toString());
                 JSONObject response = serverDBHandler.getInduct(machineId, induct_id);
                 //System.out.println(response);
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "alarms_history": {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                JSONObject response = serverDBHandler.getAlarmsHistory(machineId, 0, 0);
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "filtered_alarm_history": {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                long startTimestamp = Long.parseLong(jsonObject.get("start").toString());
-                long endTimestamp = Long.parseLong(jsonObject.get("end").toString());
-                JSONObject response = serverDBHandler.getAlarmsHistory(machineId, startTimestamp, endTimestamp);
                 sendMessage(clientName, response.toString());
                 break;
             }
