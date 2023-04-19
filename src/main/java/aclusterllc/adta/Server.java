@@ -544,6 +544,20 @@ public class Server implements Runnable {
                 sendMessage(clientName, response.toString());
                 break;
             }
+            case "getAlarmsHitList": {
+                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                JSONObject params= (JSONObject) jsonObject.get("params");
+                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
+                int page = 1;
+                int per_page = 2;
+                JSONObject response=new JSONObject();
+                response.put("type","getAlarmsHitList");
+                response.put("machineId",machineId);
+                response.put("alarms",serverDBHandler.getAlarmsHitList(machineId,from_timestamp,to_timestamp));
+                sendMessage(clientName, response.toString());
+                break;
+            }
             //--------------------------
             case "mod_sort": {
                 int machineId = Integer.parseInt(jsonObject.get("id").toString());
@@ -560,20 +574,6 @@ public class Server implements Runnable {
                 int induct_id = Integer.parseInt(jsonObject.get("induct_number").toString());
                 JSONObject response = serverDBHandler.getInduct(machineId, induct_id);
                 //System.out.println(response);
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "alarms_hit_list": {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                JSONObject response = serverDBHandler.getAlarmsHitList(machineId, 0, 0);
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "filtered_alarm_hit_list": {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                long startTimestamp = Long.parseLong(jsonObject.get("start").toString());
-                long endTimestamp = Long.parseLong(jsonObject.get("end").toString());
-                JSONObject response = serverDBHandler.getAlarmsHitList(machineId, startTimestamp, endTimestamp);
                 sendMessage(clientName, response.toString());
                 break;
             }
