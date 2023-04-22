@@ -73,17 +73,28 @@ public class Scheduler {
                     databaseHandler.append(query);
                     logger.info("Deleting induct_states_history data older than "+delete_history_tables_older_than);
 
-                    query=format("DELETE FROM product_history WHERE (created_at < NOW() - INTERVAL %d DAY);",delete_history_tables_older_than);
-                    databaseHandler.append(query);
-                    logger.info("Deleting product_history data older than "+delete_history_tables_older_than);
-
                     query=format("DELETE FROM input_states_history WHERE (created_at < NOW() - INTERVAL %d DAY);",delete_history_tables_older_than);
                     databaseHandler.append(query);
                     logger.info("Deleting input_states_history data older than "+delete_history_tables_older_than);
 
-                    query=format("DELETE FROM statistics WHERE (created_at < NOW() - INTERVAL %d DAY);",delete_history_tables_older_than);
+                    query=format("DELETE FROM product_history WHERE (created_at < NOW() - INTERVAL %d DAY);",delete_history_tables_older_than);
                     databaseHandler.append(query);
-                    logger.info("Deleting statistics data older than "+delete_history_tables_older_than);
+                    logger.info("Deleting product_history data older than "+delete_history_tables_older_than);
+
+
+                    query=format("DELETE FROM statistics WHERE (created_at < NOW() - INTERVAL %d DAY);" +
+                            "DELETE FROM statistics_bins WHERE (created_at < NOW() - INTERVAL %d DAY);" +
+                            "DELETE FROM statistics_bins_counter WHERE (created_at < NOW() - INTERVAL %d DAY);" +
+                            "DELETE FROM statistics_bins_hourly WHERE (created_at < NOW() - INTERVAL %d DAY);" +
+                            "DELETE FROM statistics_counter WHERE (created_at < NOW() - INTERVAL %d DAY);" +
+                            "DELETE FROM statistics_hourly WHERE (created_at < NOW() - INTERVAL %d DAY);" +
+                            "DELETE FROM statistics_minutely WHERE (created_at < NOW() - INTERVAL %d DAY);"
+                            ,delete_history_tables_older_than,delete_history_tables_older_than,delete_history_tables_older_than,delete_history_tables_older_than
+                            ,delete_history_tables_older_than,delete_history_tables_older_than,delete_history_tables_older_than);
+                    databaseHandler.append(query);
+                    logger.info("Deleting All statistics data older than "+delete_history_tables_older_than);
+
+
                 }
                 catch (InterruptedException e) {
                     logger.error("Purge Scheduler failed to Sleep "+difference+" ms");
