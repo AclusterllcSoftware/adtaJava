@@ -667,8 +667,15 @@ public class DatabaseWrapper {
                 multiple_read,
                 valid_read,
                 machineId);
+        String sql24 = format("UPDATE %s SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
+                "statistics_minutely",
+                no_read,
+                no_code,
+                multiple_read,
+                valid_read,
+                machineId);
 
-        String bigQuery = sql1+sql21+sql22+sql23;
+        String bigQuery = sql1+sql21+sql22+sql23+sql24;
 
         dbHandler.append(bigQuery);
         return true;
@@ -688,6 +695,7 @@ public class DatabaseWrapper {
                 query += format("INSERT IGNORE INTO %s (`machine_id`, `mail_id`) VALUES (%d, %d);","products", machineId, mailId);
                 query += format("UPDATE %s SET total_read=total_read+1,no_code=no_code+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;","statistics",machineId);
                 query += format("UPDATE %s SET total_read=total_read+1,no_code=no_code+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;","statistics_hourly",machineId);
+                query += format("UPDATE %s SET total_read=total_read+1,no_code=no_code+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;","statistics_minutely",machineId);
                 query += format("UPDATE %s SET total_read=total_read+1,no_code=no_code+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;","statistics_counter",machineId);
             }
             rs.close();
@@ -780,6 +788,7 @@ public class DatabaseWrapper {
                 query += format("UPDATE %s SET %s=%s+1%s%s WHERE machine_id=%d ORDER BY id DESC LIMIT 1;","statistics",scColumn,scColumn,recircUpdate,rejectUpdate,machineId);
                 query += format("UPDATE %s SET %s=%s+1%s%s WHERE machine_id=%d ORDER BY id DESC LIMIT 1;","statistics_counter",scColumn,scColumn,recircUpdate,rejectUpdate,machineId);
                 query += format("UPDATE %s SET %s=%s+1%s%s WHERE machine_id=%d ORDER BY id DESC LIMIT 1;","statistics_hourly",scColumn,scColumn,recircUpdate,rejectUpdate,machineId);
+                query += format("UPDATE %s SET %s=%s+1%s%s WHERE machine_id=%d ORDER BY id DESC LIMIT 1;","statistics_minutely",scColumn,scColumn,recircUpdate,rejectUpdate,machineId);
 
 //                //bin statistics
 //                //update short code for all condition
@@ -825,6 +834,7 @@ public class DatabaseWrapper {
         String sql11 = "";
         String sql12 = "";
         String sql13 = "";
+        String sql14 = "";
         String tbl = "statistics";
 
         if(inducts.contains(inductId)) {
@@ -845,8 +855,13 @@ public class DatabaseWrapper {
                     columnName,
                     columnName,
                     machineId);
+            sql14 = format("UPDATE %s SET %s=%s+1 WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
+                    "statistics_minutely",
+                    columnName,
+                    columnName,
+                    machineId);
         }
-        String bigQuery = sql11+sql12+sql13;
+        String bigQuery = sql11+sql12+sql13+sql14;
         dbHandler.append(bigQuery);
         return true;
     }
