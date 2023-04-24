@@ -587,9 +587,24 @@ public class DatabaseWrapper {
     }
 
     public boolean processBarcodeResult(long mailId, Map<Integer, Map<String, String>> barcodeTypeWithString, int numberOfResults, int machineId) {
-
-        //int machineId = 1;
-        String tbl1 = "products";
+        String query="";
+        try {
+            Connection dbConn = DataSource.getConnection();
+            Statement stmt = dbConn.createStatement();
+            String searchProduct = String.format("SELECT id FROM products WHERE machine_id=%d and mail_id=%d", machineId,mailId);
+            ResultSet rs = stmt.executeQuery(searchProduct);
+            if (!rs.next())
+            {
+                logger.error("[BarcodeResult] Product Not Exits.MailId= "+mailId);
+                query += format("INSERT IGNORE INTO %s (`machine_id`, `mail_id`) VALUES (%d, %d);","products", machineId, mailId);
+            }
+            rs.close();
+            stmt.close();
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
 
         int valid_read = 1, no_read = 0, multiple_read = 0, no_code=0;
         //no_code
@@ -598,10 +613,10 @@ public class DatabaseWrapper {
             if(numberOfResults == 0) {
                 //no_read = 1;
                 no_code = 1;
-            } else {
+            }
+            else {
                 multiple_read = 1;
             }
-
             valid_read = 0;
         }
 
@@ -642,42 +657,38 @@ public class DatabaseWrapper {
 
         updateColumnQuery = String.join(", ", updateColumnQueryParts);
 
-        String sql1 = format("UPDATE %s SET %s WHERE machine_id=%d AND mail_id=%d LIMIT 1;", tbl1, updateColumnQuery, machineId, mailId);
 
-        String tbl2 = "statistics";
+        query += format("UPDATE %s SET %s WHERE machine_id=%d AND mail_id=%d LIMIT 1;", "products", updateColumnQuery, machineId, mailId);
 
-        String sql21 = format("UPDATE %s SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
-                tbl2,
+        query += format("UPDATE %s SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
+                "statistics",
                 no_read,
                 no_code,
                 multiple_read,
                 valid_read,
                 machineId);
-        String sql22 = format("UPDATE %s SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
+        query += format("UPDATE %s SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
                 "statistics_hourly",
                 no_read,
                 no_code,
                 multiple_read,
                 valid_read,
                 machineId);
-        String sql23 = format("UPDATE %s SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
+        query += format("UPDATE %s SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
                 "statistics_counter",
                 no_read,
                 no_code,
                 multiple_read,
                 valid_read,
                 machineId);
-        String sql24 = format("UPDATE %s SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
+        query += format("UPDATE %s SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",
                 "statistics_minutely",
                 no_read,
                 no_code,
                 multiple_read,
                 valid_read,
                 machineId);
-
-        String bigQuery = sql1+sql21+sql22+sql23+sql24;
-
-        dbHandler.append(bigQuery);
+        dbHandler.append(query);
         return true;
     }
 
