@@ -20,6 +20,7 @@ public class Scheduler {
         String purge_time=ServerConstants.configuration.get("purge_time");
         int delete_ingram_product_older_than=Integer.parseInt(ServerConstants.configuration.get("delete_ingram_product_older_than"));
         int delete_history_tables_older_than=Integer.parseInt(ServerConstants.configuration.get("delete_history_tables_older_than"));
+        int delete_history_customer_tables_older_than=Integer.parseInt(ServerConstants.configuration.get("delete_history_customer_tables_older_than"));
         //System.out.println(purge_time+" "+delete_history_tables_older_than+" "+delete_ingram_product_older_than);
         new Thread(()->{
             while (true){
@@ -53,9 +54,9 @@ public class Scheduler {
                         logger.info("Ingram product delete skipped because ingram is not enabled");
                     }
 
-                    String query=format("DELETE FROM active_alarms_history WHERE (date_active < NOW() - INTERVAL %d DAY);",delete_history_tables_older_than);
+                    String query=format("DELETE FROM active_alarms_history WHERE (date_active < NOW() - INTERVAL %d DAY);",delete_history_customer_tables_older_than);
                     databaseHandler.append(query);
-                    logger.info("Deleting active_alarms_history data older than "+delete_history_tables_older_than);
+                    logger.info("Deleting active_alarms_history data older than "+delete_history_customer_tables_older_than);
 
                     query=format("DELETE FROM bin_states_history WHERE (created_at < NOW() - INTERVAL %d DAY);",delete_history_tables_older_than);
                     databaseHandler.append(query);
@@ -77,9 +78,9 @@ public class Scheduler {
                     databaseHandler.append(query);
                     logger.info("Deleting input_states_history data older than "+delete_history_tables_older_than);
 
-                    query=format("DELETE FROM product_history WHERE (created_at < NOW() - INTERVAL %d DAY);",delete_history_tables_older_than);
+                    query=format("DELETE FROM product_history WHERE (created_at < NOW() - INTERVAL %d DAY);",delete_history_customer_tables_older_than);
                     databaseHandler.append(query);
-                    logger.info("Deleting product_history data older than "+delete_history_tables_older_than);
+                    logger.info("Deleting product_history data older than "+delete_history_customer_tables_older_than);
 
 
                     query=format("DELETE FROM statistics WHERE (created_at < NOW() - INTERVAL %d DAY);" +
@@ -89,10 +90,10 @@ public class Scheduler {
                             "DELETE FROM statistics_counter WHERE (created_at < NOW() - INTERVAL %d DAY);" +
                             "DELETE FROM statistics_hourly WHERE (created_at < NOW() - INTERVAL %d DAY);" +
                             "DELETE FROM statistics_minutely WHERE (created_at < NOW() - INTERVAL %d DAY);"
-                            ,delete_history_tables_older_than,delete_history_tables_older_than,delete_history_tables_older_than,delete_history_tables_older_than
-                            ,delete_history_tables_older_than,delete_history_tables_older_than,delete_history_tables_older_than);
+                            ,delete_history_customer_tables_older_than,delete_history_customer_tables_older_than,delete_history_customer_tables_older_than,delete_history_customer_tables_older_than
+                            ,delete_history_customer_tables_older_than,delete_history_customer_tables_older_than,delete_history_customer_tables_older_than);
                     databaseHandler.append(query);
-                    logger.info("Deleting All statistics data older than "+delete_history_tables_older_than);
+                    logger.info("Deleting All statistics data older than "+delete_history_customer_tables_older_than);
 
 
                 }

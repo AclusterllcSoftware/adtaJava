@@ -67,6 +67,7 @@ public class HydenConfigs {
 			result.put("purge_time", prop.getProperty("purge_time"));
 			result.put("delete_ingram_product_older_than", prop.getProperty("delete_ingram_product_older_than"));
 			result.put("delete_history_tables_older_than", prop.getProperty("delete_history_tables_older_than"));
+			result.put("delete_history_customer_tables_older_than", prop.getProperty("delete_history_customer_tables_older_than"));
 			result.put("disconnect_ingram_clients_when_purge", prop.getProperty("disconnect_ingram_clients_when_purge"));
 
 		} catch (Exception e) {
