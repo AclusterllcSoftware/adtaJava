@@ -271,6 +271,7 @@ public class Server implements Runnable {
                 response.put("type","getStatistics");
                 response.put("machineId",machineId);
                 response.put("statistics",serverDBHandler.getStatistics(machineId,from_timestamp,to_timestamp));
+                response.put("statistics_minute",serverDBHandler.getStatisticsMinutely(machineId,from_timestamp,to_timestamp));
                 sendMessage(clientName, response.toString());
                 break;
             }
