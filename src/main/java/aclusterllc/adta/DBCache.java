@@ -353,6 +353,8 @@ public class DBCache {
                 item.put("description",rs.getString("description"));
                 item.put("value",rs.getString("value"));
                 item.put("unit",rs.getString("unit"));
+                item.put("value_min",rs.getString("value_min"));
+                item.put("value_max",rs.getString("value_max"));
                 parametersInfo.put(rs.getString("machine_id")+"_"+rs.getString("param_id"),item);
             }
 
