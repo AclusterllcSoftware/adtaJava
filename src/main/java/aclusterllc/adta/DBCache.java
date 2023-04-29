@@ -452,7 +452,7 @@ public class DBCache {
                 }
             }
 
-            String machineQuery = "SELECT * FROM machines WHERE 1";
+            String machineQuery = "SELECT *,UNIX_TIMESTAMP(install_at) AS install_at_timestamp FROM machines WHERE 1";
             rs = stmt.executeQuery(machineQuery);
             while (rs.next())
             {
@@ -474,6 +474,8 @@ public class DBCache {
                 item.put("maintenance_gui_ip",rs.getString("maintenance_gui_ip"));
                 item.put("machine_mode",rs.getString("machine_mode"));
                 item.put("machine_state",rs.getString("machine_state"));
+                item.put("install_at",rs.getString("install_at"));
+                item.put("install_at_timestamp",rs.getLong("install_at_timestamp"));
                 machinesInfo.put(rs.getString("machine_id"),item);
 
             }
