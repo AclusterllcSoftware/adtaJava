@@ -55,6 +55,7 @@ public class DBCache {
     public static final JSONObject scsInfo = new JSONObject();
     public static final JSONObject motorsInfo = new JSONObject();
     public static final JSONObject motorsCurrentSpeed = new JSONObject();
+    public static final JSONObject countersCurrentValue = new JSONObject();
     public static final JSONObject boardsInfo = new JSONObject();
     public static final JSONObject board_iosInfo = new JSONObject();
     public static final JSONObject parametersInfo = new JSONObject();

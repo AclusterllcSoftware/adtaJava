@@ -962,6 +962,12 @@ public class MessageHandler {
             }
 
         }
+        else if (messageId==56){
+            int counterCount = (int) bytesToLong(Arrays.copyOfRange(bodyBytes, 4, 8));//4,5,6,7
+            for(int i=0;i<counterCount;i++){
+                DBCache.countersCurrentValue.put(this.client.machineId+"_"+(i+1),(int) bytesToLong(Arrays.copyOfRange(bodyBytes, 8+i*4, 12+i*4)));
+            }
+        }
         else{
             System.out.println("Not Handled: "+messageId);
         }
