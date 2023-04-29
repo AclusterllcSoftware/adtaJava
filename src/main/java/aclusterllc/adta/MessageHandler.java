@@ -1,6 +1,7 @@
 package aclusterllc.adta;
 
 import org.apache.logging.log4j.core.net.ssl.SslConfiguration;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -694,7 +695,7 @@ public class MessageHandler {
                    //System.out.println("Ping Response");
                 }
             }
-            List<Integer> dbWrapperPostMessages=Arrays.asList(11,12,13,49,50,51,52);
+            List<Integer> dbWrapperPostMessages=Arrays.asList(11,12,13,49,50,51,52,55,56);
             if(dbWrapperPostMessages.contains(messageId))
             {
                 JSONObject params=new JSONObject();
@@ -926,6 +927,40 @@ public class MessageHandler {
             }
             String notificationStr =  "Belt_status Message [" + messageId + "]" + "[M:" + this.client.machineId + "]";
             this.client.notifyListeners("Server",notificationStr );
+        }
+        else if(messageId==55){
+            JSONArray resultsJsonArray = new JSONArray();
+            try {
+                Connection dbConn = DataSource.getConnection();
+                Statement stmt = dbConn.createStatement();
+                String query = String.format("SELECT param_id,value FROM parameters WHERE machine_id=%d", this.client.machineId);
+                ResultSet rs = stmt.executeQuery(query);
+                while (rs.next())
+                {
+                    JSONObject row=new JSONObject();
+                    row.put("param_id",rs.getInt("param_id"));
+                    row.put("value",rs.getInt("value"));
+                    resultsJsonArray.put(row);
+                }
+                rs.close();
+                stmt.close();
+                dbConn.close();
+                for(int i=0;i<resultsJsonArray.length();i++){
+                    JSONObject row= (JSONObject) resultsJsonArray.get(i);
+                    int paramId = row.getInt("param_id");
+                    int value = row.getInt("value");
+                    byte[] messageBytes= new byte[]{
+                            0, 0, 0, 115, 0, 0, 0, 20,0,0,0,0,
+                            (byte) (paramId >> 24),(byte) (paramId >> 16),(byte) (paramId >> 8),(byte) (paramId),
+                            (byte) (value >> 24),(byte) (value >> 16),(byte) (value >> 8),(byte) (value)
+                    };
+                    this.client.sendBytes(messageBytes);
+                }
+            }
+            catch (Exception e) {
+                logger.error(e.toString());
+            }
+
         }
         else{
             System.out.println("Not Handled: "+messageId);
