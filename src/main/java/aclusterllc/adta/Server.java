@@ -485,6 +485,7 @@ public class Server implements Runnable {
                 response.put("ioInputsStates",serverDBHandler.getIoInputsStates(machineId));
                 response.put("ioOutputStates",serverDBHandler.getIoOutputsStates(machineId));
                 response.put("parameterValues",serverDBHandler.getParameterValues(machineId));
+                response.put("countersCurrentValue",DBCache.countersCurrentValue);
                 sendMessage(clientName, response.toString());
                 break;
             }
