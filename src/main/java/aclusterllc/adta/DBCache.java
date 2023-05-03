@@ -480,6 +480,9 @@ public class DBCache {
                 item.put("install_at",rs.getString("install_at"));
                 item.put("install_at_timestamp",rs.getLong("install_at_timestamp"));
                 machinesInfo.put(rs.getString("machine_id"),item);
+                for(int i=0;i<32;i++){
+                    countersCurrentValue.put(rs.getString("machine_id")+"_"+(i+1),0);
+                }
 
             }
             String estopLocationQuery = "SELECT combo_id, name FROM estop_locations WHERE 1";
