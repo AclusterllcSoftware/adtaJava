@@ -157,8 +157,6 @@ public class DBCache {
                 item.put("gui_bin_id",rs.getString("gui_bin_id"));
                 item.put("recirc_bin",rs.getString("recirc_bin"));
                 item.put("reject_bin",rs.getString("reject_bin"));
-                item.put("jog_raise_id",rs.getString("jog_raise_id"));
-                item.put("jog_lower_id",rs.getString("jog_lower_id"));
                 binsInfo.put(rs.getString("machine_id")+"_"+rs.getString("bin_id"),item);
             }
             String boardsQuery = "SELECT * FROM boards WHERE 1";
