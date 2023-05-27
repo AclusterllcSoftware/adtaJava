@@ -178,42 +178,37 @@ public class Server implements Runnable {
         buffer.flip();
         buffer.get(b);
 
-        String bufferToString = new String( b, StandardCharsets.UTF_8 );
-        //System.out.println(bufferToString);
-        while (bufferToString.length()>0){
-            //System.out.println(bufferToString);
-            if(bufferToString.charAt(0)=='{'){
-                int firstCurlyCount=0;
-                for(int i=0;i<bufferToString.length();i++){
-                    if(bufferToString.charAt(i)=='{'){
-                        firstCurlyCount++;
-                    }
-                    else if(bufferToString.charAt(i)=='}'){
-                        firstCurlyCount--;
-                    }
-                    if(firstCurlyCount==0){
-                        try {
-                            JSONObject jo = new JSONObject(bufferToString.substring(0,i+1));
-                            if(jo.get("req") != null) {
-                                processClientRequest(clientName, jo);
-                            }
-                        } catch (JSONException | ParseException e) {
-                            logger.error(e.toString());
-                            //e.printStackTrace();
-                        }
-                        bufferToString=bufferToString.substring(i+1);
-                        break;
-                    }
-                }
-                if(firstCurlyCount!=0){
-                    logger.error("Json end error");
-                    break;
-                }
+        String data = new String( b, StandardCharsets.UTF_8 );
+
+        String startTag="<begin>";
+        String endTag="</begin>";
+        int startPos=data.indexOf(startTag);
+        int endPos=data.indexOf(endTag);
+        while (startPos>-1 && endPos>-1){
+            if(startPos>0){
+                logger.warn("[START_POS_ERROR] Message did not started with begin");
+                logger.warn("[MESSAGE]"+data);
+            }
+            if(startPos>endPos){
+                logger.warn("[END_POS_ERROR] End tag found before start tag.");
+                logger.warn("[MESSAGE]"+data);
+                data=data.substring(startPos);
             }
             else{
-                logger.error("Json start error");
-                break;
+                String messageString=data.substring(startPos+startTag.length(),endPos);
+                try {
+                    JSONObject jo = new JSONObject(messageString);
+                    if(jo.get("req") != null) {
+                        processClientRequest(clientName, jo);
+                    }
+                }
+                catch (JSONException | ParseException e) {
+                    logger.error(e.toString());
+                }
+                data=data.substring(endPos+endTag.length());
             }
+            startPos=data.indexOf(startTag);
+            endPos=data.indexOf(endTag);
         }
 
     }
@@ -694,7 +689,10 @@ public class Server implements Runnable {
     }
 
     public void sendMessage(String clientName, String msg) {
-        msg = msg + ";#;#;";
+        //msg = msg + ";#;#;";
+        String startTag="<begin>";
+        String endTag="</begin>";
+        msg=startTag+msg+endTag;
 
         if((clientList.size() > 0) && (clientList.get(clientName) != null)) {
             SocketChannel sc = clientList.get(clientName);
