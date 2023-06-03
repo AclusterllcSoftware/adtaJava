@@ -340,6 +340,8 @@ public class DBCache {
                 item.put("alarm_type",rs.getString("alarm_type"));
                 item.put("speed_max",rs.getString("speed_max"));
                 item.put("speed_min",rs.getString("speed_min"));
+                item.put("nominal_speed",rs.getString("nominal_speed"));
+                item.put("coeff",rs.getString("coeff"));
                 motorsInfo.put(rs.getString("machine_id")+"_"+rs.getString("motor_id"),item);
                 motorsCurrentSpeed.put(rs.getString("machine_id")+"_"+rs.getString("motor_id"),0);
             }
