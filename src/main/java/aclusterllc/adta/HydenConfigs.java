@@ -46,6 +46,7 @@ public class HydenConfigs {
 			// get the property value and print it out
 			result.put("hmi_server_ip", prop.getProperty("hmi_server_ip"));
 			result.put("hmi_server_port", prop.getProperty("hmi_server_port"));
+			result.put("java_server_minimized", prop.getProperty("java_server_minimized"));
 			result.put("db.host", prop.getProperty("db.host"));
 			result.put("db.name", prop.getProperty("db.name"));
 			result.put("db.username", prop.getProperty("db.username"));

@@ -17,15 +17,22 @@ public class Main {
         MainGui mainGui = new MainGui();
         ClientListener textAreaListener = new TextAreaListener(mainGui);
         mainGui.startGui();
-
-        DBCache dbCache = DBCache.getInstance();
-
-
         try {
+            mainGui.appendToMainTextArea("Waiting "+initialSleepTime+"s");
+            logger.info("Waiting "+initialSleepTime+"s");
             Thread.sleep(initialSleepTime * 1000);
         } catch (InterruptedException e) {
+            logger.info("Waiting Error");
             e.printStackTrace();
         }
+        mainGui.appendToMainTextArea("Waiting Finished");
+
+
+        DBCache dbCache = DBCache.getInstance();
+        mainGui.appendToMainTextArea("Database Loaded");
+
+
+
         DatabaseHandler databaseHandler = new DatabaseHandler();
 
         Server server = new Server();
