@@ -5,6 +5,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -26,7 +28,7 @@ public class DataSource {
         config.setUsername( dbUsername );
         config.setPassword( dbPassword );
         config.setMaximumPoolSize(30);
-        config.setConnectionTimeout(300000);
+        config.setConnectionTimeout(3000);
         config.setLeakDetectionThreshold(300000);
         config.addDataSourceProperty( "cachePrepStmts" , "true" );
         config.addDataSourceProperty( "prepStmtCacheSize" , "250" );
@@ -45,7 +47,19 @@ public class DataSource {
 
     private DataSource() {}
 
-    public static Connection getConnection() throws SQLException {
-        return ds.getConnection();
+//    public static Connection getConnection() throws SQLException {
+//        return ds.getConnection();
+//    }
+    public static Connection getConnection(){
+        try {
+            return ds.getConnection();
+        }
+        catch (SQLException ex) {
+            Logger logger = LoggerFactory.getLogger(DataSource.class);
+            logger.error("[Database] Connection Failed.Closing Java Program.");
+            logger.error("[Database]"+ServerConstants.getStackTraceString(ex));
+            System.exit(0);
+            return null;
+        }
     }
 }

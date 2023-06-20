@@ -80,7 +80,7 @@ public class MainGui {
     }
 
     public void startGui() {
-        JFrame frame = new JFrame("ADTA 1.0.24");
+        JFrame frame = new JFrame("ADTA 1.0.25");
         if(Integer.parseInt(ServerConstants.configuration.get("java_server_minimized"))==1){
             frame.setState(Frame.ICONIFIED);
         }
