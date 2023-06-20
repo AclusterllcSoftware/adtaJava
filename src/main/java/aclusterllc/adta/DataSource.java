@@ -28,7 +28,7 @@ public class DataSource {
         config.setUsername( dbUsername );
         config.setPassword( dbPassword );
         config.setMaximumPoolSize(30);
-        config.setConnectionTimeout(3000);
+        config.setConnectionTimeout(300000);
         config.setLeakDetectionThreshold(300000);
         config.addDataSourceProperty( "cachePrepStmts" , "true" );
         config.addDataSourceProperty( "prepStmtCacheSize" , "250" );
