@@ -57,7 +57,7 @@ public class DataSource {
         catch (SQLException ex) {
             Logger logger = LoggerFactory.getLogger(DataSource.class);
             logger.error("[Database] Connection Failed.Closing Java Program.");
-            logger.error("[Database]"+ServerConstants.getStackTraceString(ex));
+            logger.error("[Database]"+CommonHelper.getStackTraceString(ex));
             System.exit(0);
             return null;
         }

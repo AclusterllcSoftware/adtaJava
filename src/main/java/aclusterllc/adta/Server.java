@@ -1,5 +1,6 @@
 package aclusterllc.adta;
 
+import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.json.JSONException;
@@ -223,468 +224,528 @@ public class Server implements Runnable {
     }
 
     public void processClientRequest(String clientName, JSONObject jsonObject) throws ParseException {
-        String req = jsonObject.get("req").toString();
-        //System.out.println(req);
-        switch (req) {
-            case "basic_info": {
-                JSONObject basic_info = new JSONObject();
-                basic_info.put("alarmsInfo",DBCache.alarmsInfo);
-                basic_info.put("binsInfo",DBCache.binsInfo);
-                basic_info.put("boardsInfo",DBCache.boardsInfo);
-                basic_info.put("board_iosInfo",DBCache.board_iosInfo);
-                basic_info.put("conveyorsInfo",DBCache.conveyorsInfo);
-                basic_info.put("devicesInfo",DBCache.devicesInfo);
-                basic_info.put("inputsInfo",DBCache.inputsInfo);
-                basic_info.put("motorsInfo",DBCache.motorsInfo);
-                basic_info.put("parametersInfo",DBCache.parametersInfo);
-                basic_info.put("scsInfo",DBCache.scsInfo);
-                basic_info.put("machinesInfo",DBCache.machinesInfo);
+        try {
+            String request = jsonObject.get("req").toString();
+            JSONArray requestData = new JSONArray();
+            if (jsonObject.has("requestData")) {
+                requestData = jsonObject.getJSONArray("requestData");
+            }
+            if (requestData.length() > 0) {
+                JSONObject params = new JSONObject();
+                if (jsonObject.has("params")) {
+                    params = jsonObject.getJSONObject("params");
+                }
+                int machine_id=0;
+                if(params.has("machine_id")){machine_id=params.getInt("machine_id");}
 
-                JSONObject response = new JSONObject();
-                response.put("type","basic_info");
-                response.put("basic_info",basic_info);
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "getCommonStatus": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
                 JSONObject response=new JSONObject();
-                response.put("type","getCommonStatus");
-                response.put("machineId",machineId);
-                response.put("disconnectedDeviceCounter",serverDBHandler.getDisconnectedDeviceCounter(machineId));
-                response.put("machineMode",serverDBHandler.getMachineMode(machineId));
-                response.put("activeAlarms",serverDBHandler.getActiveAlarms(machineId));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "getIoOutputStates": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                JSONObject response=new JSONObject();
-                response.put("type","getIoOutputStates");
-                response.put("machineId",machineId);
-                response.put("ioOutputStates",serverDBHandler.getIoOutputsStates(machineId));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "getStatistics": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
-                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
-                JSONObject response=new JSONObject();
-                response.put("type","getStatistics");
-                response.put("machineId",machineId);
-                response.put("statistics",serverDBHandler.getStatistics(machineId,from_timestamp,to_timestamp));
-                response.put("statistics_minute",serverDBHandler.getStatisticsMinutely(machineId,from_timestamp,to_timestamp));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "getStatisticsHourly": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
-                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
-                JSONObject response=new JSONObject();
-                response.put("type","getStatisticsHourly");
-                response.put("machineId",machineId);
-                response.put("statistics",serverDBHandler.getStatisticsHourly(machineId,from_timestamp,to_timestamp));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "getStatisticsMinutely": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
-                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
-                JSONObject response=new JSONObject();
-                response.put("type","getStatisticsMinutely");
-                response.put("machineId",machineId);
-                response.put("statistics",serverDBHandler.getStatisticsMinutely(machineId,from_timestamp,to_timestamp));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "getStatisticsCounter": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
-                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
-                JSONObject response=new JSONObject();
-                response.put("type","getStatisticsCounter");
-                response.put("machineId",machineId);
-                response.put("statistics",serverDBHandler.getStatisticsCounter(machineId,from_timestamp,to_timestamp));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "getStatisticsCounterLast": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                JSONObject response=new JSONObject();
-                response.put("type","getStatisticsCounterLast");
-                response.put("machineId",machineId);
-                response.put("statistics",serverDBHandler.getStatisticsCounterLast(machineId));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-
-            case "getStatisticsBins": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
-                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
-                JSONObject response=new JSONObject();
-                response.put("type","getStatisticsBins");
-                response.put("machineId",machineId);
-                response.put("statistics",serverDBHandler.getStatisticsBins(machineId,from_timestamp,to_timestamp));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "getStatisticsBinsHourly": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
-                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
-                JSONObject response=new JSONObject();
-                response.put("type","getStatisticsBinsHourly");
-                response.put("machineId",machineId);
-                response.put("statistics",serverDBHandler.getStatisticsBinsHourly(machineId,from_timestamp,to_timestamp));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "getStatisticsBinsCounter": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
-                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
-                JSONObject response=new JSONObject();
-                response.put("type","getStatisticsBinsCounter");
-                response.put("machineId",machineId);
-                response.put("statistics",serverDBHandler.getStatisticsBinsCounter(machineId,from_timestamp,to_timestamp));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "getGeneralViewData": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                //JSONObject params= (JSONObject) jsonObject.get("params");
-                JSONObject response=new JSONObject();
-                response.put("type","getGeneralViewData");
-                response.put("machineId",machineId);
-                response.put("binsStates",serverDBHandler.getBinsStates(machineId));
-                response.put("inputsStates",serverDBHandler.getInputsStates(machineId));
-                response.put("conveyorsStates",serverDBHandler.getConveyorsStates(machineId));
-                response.put("activeAlarms",serverDBHandler.getActiveAlarms(machineId));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "getGeneralDevicesViewData": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                //JSONObject params= (JSONObject) jsonObject.get("params");
-                JSONObject response=new JSONObject();
-                response.put("type","getGeneralDevicesViewData");
-                response.put("machineId",machineId);
-                response.put("binsStates",serverDBHandler.getBinsStates(machineId));
-                response.put("inputsStates",serverDBHandler.getInputsStates(machineId));//for estops
-                response.put("conveyorsStates",serverDBHandler.getConveyorsStates(machineId));
-                response.put("devicesStates",serverDBHandler.getDevicesStates(machineId));
-                response.put("activeAlarms",serverDBHandler.getActiveAlarms(machineId));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "getGeneralMotorsViewData": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                //JSONObject params= (JSONObject) jsonObject.get("params");
-                JSONObject response=new JSONObject();
-                response.put("type","getGeneralMotorsViewData");
-                response.put("machineId",machineId);
-                response.put("binsStates",serverDBHandler.getBinsStates(machineId));
-                response.put("inputsStates",serverDBHandler.getInputsStates(machineId));
-                response.put("conveyorsStates",serverDBHandler.getConveyorsStates(machineId));
-                response.put("devicesStates",serverDBHandler.getDevicesStates(machineId));
-                response.put("motorsCurrentSpeed",DBCache.motorsCurrentSpeed);
-                response.put("activeAlarms",serverDBHandler.getActiveAlarms(machineId));
-                response.put("machineMode",serverDBHandler.getMachineMode(machineId));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "getAlarmsViewData": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                //JSONObject params= (JSONObject) jsonObject.get("params");
-                JSONObject response=new JSONObject();
-                response.put("type","getAlarmsViewData");
-                response.put("machineId",machineId);
-                response.put("activeAlarms",serverDBHandler.getActiveAlarms(machineId));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "getGeneralBinDetailsViewData": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                int sort_manager_id = Integer.parseInt(params.get("sort_manager_id").toString());
-                JSONObject response=new JSONObject();
-                response.put("type","getGeneralBinDetailsViewData");
-                response.put("machineId",machineId);
-                response.put("sort_manager_id",sort_manager_id);
-                response.put("inputsStates",serverDBHandler.getInputsStates(machineId));
-                response.put("binsStates",serverDBHandler.getBinsStates(machineId));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "sendDeviceCommand": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                int deviceId = Integer.parseInt(params.get("deviceId").toString());
-                int command = Integer.parseInt(params.get("command").toString());
-                int parameter1 = Integer.parseInt(params.get("parameter1").toString());
-                //reset Command
-                if(deviceId==86 && command==0){
-                    try {
-                        Connection dbConn = DataSource.getConnection();
-                        Statement stmt = dbConn.createStatement();
-                        String insertQuery="INSERT IGNORE INTO statistics_counter (machine_id) SELECT DISTINCT machine_id FROM machines;INSERT IGNORE INTO statistics_bins_counter (machine_id,bin_id) SELECT DISTINCT machine_id,bin_id FROM bins;";
-                        dbConn.setAutoCommit(false);
-                        stmt.execute(insertQuery);
-                        dbConn.commit();
-                        dbConn.setAutoCommit(true);
-                        stmt.close();
-                        dbConn.close();
-                    }
-                    catch (Exception e) {
-                        logger.error(e.toString());
+                response.put("request",request);
+                response.put("params",params);
+                Connection connection=DataSource.getConnection();
+                JSONObject responseData=new JSONObject();
+                for(int i=0;i<requestData.length();i++){
+                    JSONObject requestFunction=requestData.getJSONObject(i);
+                    String requestFunctionName=requestFunction.getString("name");
+                    switch (requestFunctionName) {
+                        case "statistics": {
+                            responseData.put(requestFunctionName,DatabaseHelper.getStatisticsData(connection,machine_id,"statistics",requestFunction.getJSONObject("params")));
+                            break;
+                        }
+                        case "statistics_hourly": {
+                            responseData.put(requestFunctionName,DatabaseHelper.getStatisticsData(connection,machine_id,"statistics_hourly",requestFunction.getJSONObject("params")));
+                            break;
+                        }
+                        case "statistics_minutely": {
+                            responseData.put(requestFunctionName,DatabaseHelper.getStatisticsData(connection,machine_id,"statistics_minutely",requestFunction.getJSONObject("params")));
+                            break;
+                        }
+                        case "statistics_counter": {
+                            responseData.put(requestFunctionName,DatabaseHelper.getStatisticsData(connection,machine_id,"statistics_counter",requestFunction.getJSONObject("params")));
+                            break;
+                        }
+                        case "statistics_bins": {
+                            responseData.put(requestFunctionName,DatabaseHelper.getStatisticsData(connection,machine_id,"statistics_bins",requestFunction.getJSONObject("params")));
+                            break;
+                        }
+                        case "statistics_bins_counter": {
+                            responseData.put(requestFunctionName,DatabaseHelper.getStatisticsData(connection,machine_id,"statistics_bins_counter",requestFunction.getJSONObject("params")));
+                            break;
+                        }
+                        case "statistics_bins_hourly": {
+                            responseData.put(requestFunctionName,DatabaseHelper.getStatisticsData(connection,machine_id,"statistics_bins_hourly",requestFunction.getJSONObject("params")));
+                            break;
+                        }
                     }
                 }
+                connection.close();
+                response.put("data",responseData);
+                sendMessage(clientName,response.toString());
+            }
+            else {
+                switch (request) {
+                    case "basic_info": {
+                        JSONObject basic_info = new JSONObject();
+                        basic_info.put("alarmsInfo", DBCache.alarmsInfo);
+                        basic_info.put("binsInfo", DBCache.binsInfo);
+                        basic_info.put("boardsInfo", DBCache.boardsInfo);
+                        basic_info.put("board_iosInfo", DBCache.board_iosInfo);
+                        basic_info.put("conveyorsInfo", DBCache.conveyorsInfo);
+                        basic_info.put("devicesInfo", DBCache.devicesInfo);
+                        basic_info.put("inputsInfo", DBCache.inputsInfo);
+                        basic_info.put("motorsInfo", DBCache.motorsInfo);
+                        basic_info.put("parametersInfo", DBCache.parametersInfo);
+                        basic_info.put("scsInfo", DBCache.scsInfo);
+                        basic_info.put("machinesInfo", DBCache.machinesInfo);
 
-                byte[] messageBytes= new byte[]{
-                        0, 0, 0, 123, 0, 0, 0, 20,
-                        (byte) (deviceId >> 24),(byte) (deviceId >> 16),(byte) (deviceId >> 8),(byte) (deviceId),
-                        (byte) (command >> 24),(byte) (command >> 16),(byte) (command >> 8),(byte) (command),
-                        (byte) (parameter1 >> 24),(byte) (parameter1 >> 16),(byte) (parameter1 >> 8),(byte) (parameter1)
-                    };
-                Client client = cmClients.get(machineId);
-                client.sendBytes(messageBytes);
-                break;
-            }
-            case "getProductsHistory": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
-                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
-                int page = Integer.parseInt(params.get("page").toString());
-                int per_page = Integer.parseInt(params.get("per_page").toString());
-                JSONObject response=new JSONObject();
-                response.put("type","getProductsHistory");
-                response.put("machineId",machineId);
-                response.put("page",page);
-                response.put("per_page",per_page);
-                JSONObject productsResults=serverDBHandler.getProductsHistory(machineId,from_timestamp,to_timestamp,page,per_page);
-                response.put("products",productsResults.get("products"));
-                response.put("totalRecords",productsResults.get("totalRecords"));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "getMaintViewData": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                //JSONObject params= (JSONObject) jsonObject.get("params");
-                JSONObject response=new JSONObject();
-                response.put("type","getMaintViewData");
-                response.put("machineId",machineId);
-                response.put("ioInputsStates",serverDBHandler.getIoInputsStates(machineId));
-                response.put("ioOutputStates",serverDBHandler.getIoOutputsStates(machineId));
-                response.put("parameterValues",serverDBHandler.getParameterValues(machineId));
-                response.put("countersCurrentValue",DBCache.countersCurrentValue);
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "sendSetParamMessage": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                int paramId = Integer.parseInt(params.get("paramId").toString());
-                int value = Integer.parseInt(params.get("value").toString());
-                byte[] messageBytes= new byte[]{
-                        0, 0, 0, 115, 0, 0, 0, 20,0,0,0,0,
-                        (byte) (paramId >> 24),(byte) (paramId >> 16),(byte) (paramId >> 8),(byte) (paramId),
-                        (byte) (value >> 24),(byte) (value >> 16),(byte) (value >> 8),(byte) (value)
-                };
-                Client client = cmClients.get(machineId);
-                client.sendBytes(messageBytes);
-                break;
-            }
-            case "getLoginUser": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                String username = params.getString("username");
-                String password = params.getString("password");
+                        JSONObject response = new JSONObject();
+                        response.put("type", "basic_info");
+                        response.put("basic_info", basic_info);
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "getCommonStatus": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getCommonStatus");
+                        response.put("machineId", machineId);
+                        response.put("disconnectedDeviceCounter", serverDBHandler.getDisconnectedDeviceCounter(machineId));
+                        response.put("machineMode", serverDBHandler.getMachineMode(machineId));
+                        response.put("activeAlarms", serverDBHandler.getActiveAlarms(machineId));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "getIoOutputStates": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getIoOutputStates");
+                        response.put("machineId", machineId);
+                        response.put("ioOutputStates", serverDBHandler.getIoOutputsStates(machineId));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "getStatistics": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                        long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getStatistics");
+                        response.put("machineId", machineId);
+                        response.put("statistics", serverDBHandler.getStatistics(machineId, from_timestamp, to_timestamp));
+                        response.put("statistics_minute", serverDBHandler.getStatisticsMinutely(machineId, from_timestamp, to_timestamp));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "getStatisticsHourly": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                        long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getStatisticsHourly");
+                        response.put("machineId", machineId);
+                        response.put("statistics", serverDBHandler.getStatisticsHourly(machineId, from_timestamp, to_timestamp));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "getStatisticsMinutely": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                        long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getStatisticsMinutely");
+                        response.put("machineId", machineId);
+                        response.put("statistics", serverDBHandler.getStatisticsMinutely(machineId, from_timestamp, to_timestamp));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "getStatisticsCounter": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                        long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getStatisticsCounter");
+                        response.put("machineId", machineId);
+                        response.put("statistics", serverDBHandler.getStatisticsCounter(machineId, from_timestamp, to_timestamp));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "getStatisticsCounterLast": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getStatisticsCounterLast");
+                        response.put("machineId", machineId);
+                        response.put("statistics", serverDBHandler.getStatisticsCounterLast(machineId));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
 
-                JSONObject response=new JSONObject();
-                response.put("type","getLoginUser");
-                response.put("machineId",machineId);
-                response.put("loginInfo",serverDBHandler.getLoginUser(username,password));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "changeCurrentUserPassword": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                int id = Integer.parseInt(params.get("id").toString());
-                String password = params.get("password").toString();
-                String password_new = params.get("password_new").toString();
-                JSONObject response=new JSONObject();
-                response.put("type","changeCurrentUserPassword");
-                response.put("machineId",machineId);
-                response.put("changeInfo",serverDBHandler.changeCurrentUserPassword(id,password,password_new));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "changeMode": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                int mode = Integer.parseInt(params.get("mode").toString());
-                byte[] messageBytes= new byte[]{
-                        0, 0, 0, 120, 0, 0, 0, 9,(byte)mode
-                };
-                Client client = cmClients.get(machineId);
-                client.sendBytes(messageBytes);
-                break;
-            }
-            case "getAlarmsHistory": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
-                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
-                int page = Integer.parseInt(params.get("page").toString());
-                int per_page = Integer.parseInt(params.get("per_page").toString());
-                JSONObject response=new JSONObject();
-                response.put("type","getAlarmsHistory");
-                response.put("machineId",machineId);
-                response.put("page",page);
-                response.put("per_page",per_page);
-                JSONObject alarmsResults=serverDBHandler.getAlarmsHistory(machineId,from_timestamp,to_timestamp,page,per_page);
-                response.put("alarms",alarmsResults.get("alarms"));
-                response.put("totalRecords",alarmsResults.get("totalRecords"));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "getAlarmsHitList": {
-                int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                JSONObject params= (JSONObject) jsonObject.get("params");
-                long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
-                long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
-                int page = 1;
-                int per_page = 2;
-                JSONObject response=new JSONObject();
-                response.put("type","getAlarmsHitList");
-                response.put("machineId",machineId);
-                response.put("alarms",serverDBHandler.getAlarmsHitList(machineId,from_timestamp,to_timestamp));
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            //--------------------------
-            case "mod_sort": {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                int device_type = Integer.parseInt(jsonObject.get("device_type").toString());
-                int device_number = Integer.parseInt(jsonObject.get("device_number").toString());
-                //System.out.println("Machine:" + machineId + "D:" + device_type + " S:" + device_number);
-                JSONObject response = serverDBHandler.getModSort(machineId, device_type, device_number);
-                //System.out.println(response);
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "induct": {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                int induct_id = Integer.parseInt(jsonObject.get("induct_number").toString());
-                JSONObject response = serverDBHandler.getInduct(machineId, induct_id);
-                //System.out.println(response);
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "status": {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                JSONObject response = serverDBHandler.getErrorStatus(machineId);
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "statistics": {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                JSONObject response = serverDBHandler.getStatistics(machineId);
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "sorted_graphs": {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                JSONObject response = serverDBHandler.getSortedGraphs(machineId);
-                sendMessage(clientName, response.toString());
-                break;
-            }
+                    case "getStatisticsBins": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                        long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getStatisticsBins");
+                        response.put("machineId", machineId);
+                        response.put("statistics", serverDBHandler.getStatisticsBins(machineId, from_timestamp, to_timestamp));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "getStatisticsBinsHourly": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                        long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getStatisticsBinsHourly");
+                        response.put("machineId", machineId);
+                        response.put("statistics", serverDBHandler.getStatisticsBinsHourly(machineId, from_timestamp, to_timestamp));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "getStatisticsBinsCounter": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                        long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getStatisticsBinsCounter");
+                        response.put("machineId", machineId);
+                        response.put("statistics", serverDBHandler.getStatisticsBinsCounter(machineId, from_timestamp, to_timestamp));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "getGeneralViewData": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        //JSONObject params= (JSONObject) jsonObject.get("params");
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getGeneralViewData");
+                        response.put("machineId", machineId);
+                        response.put("binsStates", serverDBHandler.getBinsStates(machineId));
+                        response.put("inputsStates", serverDBHandler.getInputsStates(machineId));
+                        response.put("conveyorsStates", serverDBHandler.getConveyorsStates(machineId));
+                        response.put("activeAlarms", serverDBHandler.getActiveAlarms(machineId));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "getGeneralDevicesViewData": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        //JSONObject params= (JSONObject) jsonObject.get("params");
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getGeneralDevicesViewData");
+                        response.put("machineId", machineId);
+                        response.put("binsStates", serverDBHandler.getBinsStates(machineId));
+                        response.put("inputsStates", serverDBHandler.getInputsStates(machineId));//for estops
+                        response.put("conveyorsStates", serverDBHandler.getConveyorsStates(machineId));
+                        response.put("devicesStates", serverDBHandler.getDevicesStates(machineId));
+                        response.put("activeAlarms", serverDBHandler.getActiveAlarms(machineId));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "getGeneralMotorsViewData": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        //JSONObject params= (JSONObject) jsonObject.get("params");
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getGeneralMotorsViewData");
+                        response.put("machineId", machineId);
+                        response.put("binsStates", serverDBHandler.getBinsStates(machineId));
+                        response.put("inputsStates", serverDBHandler.getInputsStates(machineId));
+                        response.put("conveyorsStates", serverDBHandler.getConveyorsStates(machineId));
+                        response.put("devicesStates", serverDBHandler.getDevicesStates(machineId));
+                        response.put("motorsCurrentSpeed", DBCache.motorsCurrentSpeed);
+                        response.put("activeAlarms", serverDBHandler.getActiveAlarms(machineId));
+                        response.put("machineMode", serverDBHandler.getMachineMode(machineId));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "getAlarmsViewData": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        //JSONObject params= (JSONObject) jsonObject.get("params");
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getAlarmsViewData");
+                        response.put("machineId", machineId);
+                        response.put("activeAlarms", serverDBHandler.getActiveAlarms(machineId));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "getGeneralBinDetailsViewData": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        int sort_manager_id = Integer.parseInt(params.get("sort_manager_id").toString());
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getGeneralBinDetailsViewData");
+                        response.put("machineId", machineId);
+                        response.put("sort_manager_id", sort_manager_id);
+                        response.put("inputsStates", serverDBHandler.getInputsStates(machineId));
+                        response.put("binsStates", serverDBHandler.getBinsStates(machineId));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "sendDeviceCommand": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        int deviceId = Integer.parseInt(params.get("deviceId").toString());
+                        int command = Integer.parseInt(params.get("command").toString());
+                        int parameter1 = Integer.parseInt(params.get("parameter1").toString());
+                        //reset Command
+                        if (deviceId == 86 && command == 0) {
+                            try {
+                                Connection dbConn = DataSource.getConnection();
+                                Statement stmt = dbConn.createStatement();
+                                String insertQuery = "INSERT IGNORE INTO statistics_counter (machine_id) SELECT DISTINCT machine_id FROM machines;INSERT IGNORE INTO statistics_bins_counter (machine_id,bin_id) SELECT DISTINCT machine_id,bin_id FROM bins;";
+                                dbConn.setAutoCommit(false);
+                                stmt.execute(insertQuery);
+                                dbConn.commit();
+                                dbConn.setAutoCommit(true);
+                                stmt.close();
+                                dbConn.close();
+                            } catch (Exception e) {
+                                logger.error(e.toString());
+                            }
+                        }
 
-            case "package_list": {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                JSONObject response = serverDBHandler.getPackageList(machineId);
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "filtered_package_list": {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                long startTimestamp = Long.parseLong(jsonObject.get("start").toString());
-                long endTimestamp = Long.parseLong(jsonObject.get("end").toString());
-                String sortingCode = jsonObject.get("sc").toString();
-                JSONObject response = serverDBHandler.getFilteredPackageList(machineId, startTimestamp, endTimestamp, sortingCode);
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "filtered_package_to_sort_list": {
-                //int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                String cartonId = jsonObject.get("cartonId").toString();
-                JSONObject response = serverDBHandler.getIngramProducts(cartonId);
-                sendMessage(clientName, response.toString());
-                break;
-            }
-            case "settings" : {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                JSONObject response = serverDBHandler.getSettings(machineId);
-                sendMessage(clientName, response.toString());
-                break;
-            }
+                        byte[] messageBytes = new byte[]{
+                                0, 0, 0, 123, 0, 0, 0, 20,
+                                (byte) (deviceId >> 24), (byte) (deviceId >> 16), (byte) (deviceId >> 8), (byte) (deviceId),
+                                (byte) (command >> 24), (byte) (command >> 16), (byte) (command >> 8), (byte) (command),
+                                (byte) (parameter1 >> 24), (byte) (parameter1 >> 16), (byte) (parameter1 >> 8), (byte) (parameter1)
+                        };
+                        Client client = cmClients.get(machineId);
+                        client.sendBytes(messageBytes);
+                        break;
+                    }
+                    case "getProductsHistory": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                        long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
+                        int page = Integer.parseInt(params.get("page").toString());
+                        int per_page = Integer.parseInt(params.get("per_page").toString());
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getProductsHistory");
+                        response.put("machineId", machineId);
+                        response.put("page", page);
+                        response.put("per_page", per_page);
+                        JSONObject productsResults = serverDBHandler.getProductsHistory(machineId, from_timestamp, to_timestamp, page, per_page);
+                        response.put("products", productsResults.get("products"));
+                        response.put("totalRecords", productsResults.get("totalRecords"));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "getMaintViewData": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        //JSONObject params= (JSONObject) jsonObject.get("params");
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getMaintViewData");
+                        response.put("machineId", machineId);
+                        response.put("ioInputsStates", serverDBHandler.getIoInputsStates(machineId));
+                        response.put("ioOutputStates", serverDBHandler.getIoOutputsStates(machineId));
+                        response.put("parameterValues", serverDBHandler.getParameterValues(machineId));
+                        response.put("countersCurrentValue", DBCache.countersCurrentValue);
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "sendSetParamMessage": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        int paramId = Integer.parseInt(params.get("paramId").toString());
+                        int value = Integer.parseInt(params.get("value").toString());
+                        byte[] messageBytes = new byte[]{
+                                0, 0, 0, 115, 0, 0, 0, 20, 0, 0, 0, 0,
+                                (byte) (paramId >> 24), (byte) (paramId >> 16), (byte) (paramId >> 8), (byte) (paramId),
+                                (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) (value)
+                        };
+                        Client client = cmClients.get(machineId);
+                        client.sendBytes(messageBytes);
+                        break;
+                    }
+                    case "getLoginUser": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        String username = params.getString("username");
+                        String password = params.getString("password");
 
-            case "change_induct" : {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                int mode = Integer.parseInt(jsonObject.get("mode").toString());
-                int inductId = 50 + Integer.parseInt(jsonObject.get("induct").toString());
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getLoginUser");
+                        response.put("machineId", machineId);
+                        response.put("loginInfo", serverDBHandler.getLoginUser(username, password));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "changeCurrentUserPassword": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        int id = Integer.parseInt(params.get("id").toString());
+                        String password = params.get("password").toString();
+                        String password_new = params.get("password_new").toString();
+                        JSONObject response = new JSONObject();
+                        response.put("type", "changeCurrentUserPassword");
+                        response.put("machineId", machineId);
+                        response.put("changeInfo", serverDBHandler.changeCurrentUserPassword(id, password, password_new));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "changeMode": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        int mode = Integer.parseInt(params.get("mode").toString());
+                        byte[] messageBytes = new byte[]{
+                                0, 0, 0, 120, 0, 0, 0, 9, (byte) mode
+                        };
+                        Client client = cmClients.get(machineId);
+                        client.sendBytes(messageBytes);
+                        break;
+                    }
+                    case "getAlarmsHistory": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                        long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
+                        int page = Integer.parseInt(params.get("page").toString());
+                        int per_page = Integer.parseInt(params.get("per_page").toString());
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getAlarmsHistory");
+                        response.put("machineId", machineId);
+                        response.put("page", page);
+                        response.put("per_page", per_page);
+                        JSONObject alarmsResults = serverDBHandler.getAlarmsHistory(machineId, from_timestamp, to_timestamp, page, per_page);
+                        response.put("alarms", alarmsResults.get("alarms"));
+                        response.put("totalRecords", alarmsResults.get("totalRecords"));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "getAlarmsHitList": {
+                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
+                        JSONObject params = (JSONObject) jsonObject.get("params");
+                        long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
+                        long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
+                        int page = 1;
+                        int per_page = 2;
+                        JSONObject response = new JSONObject();
+                        response.put("type", "getAlarmsHitList");
+                        response.put("machineId", machineId);
+                        response.put("alarms", serverDBHandler.getAlarmsHitList(machineId, from_timestamp, to_timestamp));
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    //--------------------------
+                    case "mod_sort": {
+                        int machineId = Integer.parseInt(jsonObject.get("id").toString());
+                        int device_type = Integer.parseInt(jsonObject.get("device_type").toString());
+                        int device_number = Integer.parseInt(jsonObject.get("device_number").toString());
+                        //System.out.println("Machine:" + machineId + "D:" + device_type + " S:" + device_number);
+                        JSONObject response = serverDBHandler.getModSort(machineId, device_type, device_number);
+                        //System.out.println(response);
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "induct": {
+                        int machineId = Integer.parseInt(jsonObject.get("id").toString());
+                        int induct_id = Integer.parseInt(jsonObject.get("induct_number").toString());
+                        JSONObject response = serverDBHandler.getInduct(machineId, induct_id);
+                        //System.out.println(response);
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "status": {
+                        int machineId = Integer.parseInt(jsonObject.get("id").toString());
+                        JSONObject response = serverDBHandler.getErrorStatus(machineId);
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "statistics": {
+                        int machineId = Integer.parseInt(jsonObject.get("id").toString());
+                        JSONObject response = serverDBHandler.getStatistics(machineId);
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "sorted_graphs": {
+                        int machineId = Integer.parseInt(jsonObject.get("id").toString());
+                        JSONObject response = serverDBHandler.getSortedGraphs(machineId);
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
 
-                Client client = cmClients.get(machineId);
-                try {
-                    client.sendMessage(123, inductId, mode);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    case "package_list": {
+                        int machineId = Integer.parseInt(jsonObject.get("id").toString());
+                        JSONObject response = serverDBHandler.getPackageList(machineId);
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "filtered_package_list": {
+                        int machineId = Integer.parseInt(jsonObject.get("id").toString());
+                        long startTimestamp = Long.parseLong(jsonObject.get("start").toString());
+                        long endTimestamp = Long.parseLong(jsonObject.get("end").toString());
+                        String sortingCode = jsonObject.get("sc").toString();
+                        JSONObject response = serverDBHandler.getFilteredPackageList(machineId, startTimestamp, endTimestamp, sortingCode);
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "filtered_package_to_sort_list": {
+                        //int machineId = Integer.parseInt(jsonObject.get("id").toString());
+                        String cartonId = jsonObject.get("cartonId").toString();
+                        JSONObject response = serverDBHandler.getIngramProducts(cartonId);
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+                    case "settings": {
+                        int machineId = Integer.parseInt(jsonObject.get("id").toString());
+                        JSONObject response = serverDBHandler.getSettings(machineId);
+                        sendMessage(clientName, response.toString());
+                        break;
+                    }
+
+                    case "change_induct": {
+                        int machineId = Integer.parseInt(jsonObject.get("id").toString());
+                        int mode = Integer.parseInt(jsonObject.get("mode").toString());
+                        int inductId = 50 + Integer.parseInt(jsonObject.get("induct").toString());
+
+                        Client client = cmClients.get(machineId);
+                        try {
+                            client.sendMessage(123, inductId, mode);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    }
+                    case "change_bin_mode": {
+                        int machineId = Integer.parseInt(jsonObject.get("machine").toString());
+                        int binId = Integer.parseInt(jsonObject.get("bin").toString());
+                        int mode = Integer.parseInt(jsonObject.get("mode").toString());
+
+                        //System.out.println("Change bin mode,  Machine: " + machineId + ", Bin : " + binId + ", Mode: " + mode);
+                        Client client = cmClients.get(machineId);
+                        try {
+                            client.sendMessage(111, mode, binId);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    }
+                    case "device_command": {
+                        int machineId = Integer.parseInt(jsonObject.get("id").toString());
+                        int deviceId = Integer.parseInt(jsonObject.get("device").toString());
+                        int operationId = Integer.parseInt(jsonObject.get("operation").toString());
+
+                        Client client = cmClients.get(machineId);
+                        try {
+                            client.sendMessage(123, deviceId, operationId);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    }
+
                 }
-                break;
             }
-            case "change_bin_mode": {
-                int machineId = Integer.parseInt(jsonObject.get("machine").toString());
-                int binId = Integer.parseInt(jsonObject.get("bin").toString());
-                int mode = Integer.parseInt(jsonObject.get("mode").toString());
-
-                //System.out.println("Change bin mode,  Machine: " + machineId + ", Bin : " + binId + ", Mode: " + mode);
-                Client client = cmClients.get(machineId);
-                try {
-                    client.sendMessage(111, mode, binId);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                break;
-            }
-            case "device_command" : {
-                int machineId = Integer.parseInt(jsonObject.get("id").toString());
-                int deviceId = Integer.parseInt(jsonObject.get("device").toString());
-                int operationId = Integer.parseInt(jsonObject.get("operation").toString());
-
-                Client client = cmClients.get(machineId);
-                try {
-                    client.sendMessage(123, deviceId, operationId);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                break;
-            }
-
+        }
+        catch (Exception ex){
+            logger.error(CommonHelper.getStackTraceString(ex));
         }
     }
 

@@ -213,10 +213,4 @@ public class ServerConstants {
         machine_stopped_reasons.put(3,"User Interface");
         machine_stopped_reasons.put(4,"Autho To Start");
     }
-
-    public static String getStackTraceString(Exception ex){
-        StringWriter errors = new StringWriter();
-        ex.printStackTrace(new PrintWriter(errors));
-        return errors.toString();
-    }
 }
