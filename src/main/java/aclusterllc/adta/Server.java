@@ -46,7 +46,8 @@ public class Server implements Runnable {
         try {
             selector = Selector.open();
             serverSocket = ServerSocketChannel.open();
-            serverSocket.bind(new InetSocketAddress(ServerConstants.configuration.get("hmi_server_ip"), Integer.parseInt(ServerConstants.configuration.get("hmi_server_port"))));
+            //serverSocket.bind(new InetSocketAddress(ServerConstants.configuration.get("hmi_server_ip"), Integer.parseInt(ServerConstants.configuration.get("hmi_server_port"))));
+            serverSocket.bind(new InetSocketAddress(Integer.parseInt(ServerConstants.configuration.get("hmi_server_port"))));
             serverSocket.configureBlocking(false);
             serverSocket.register(selector, SelectionKey.OP_ACCEPT);
         } catch (IOException e) {
@@ -759,8 +760,15 @@ public class Server implements Runnable {
             SocketChannel sc = clientList.get(clientName);
             ByteBuffer buf = ByteBuffer.wrap(msg.getBytes());
             try {
-                sc.write(buf);
-            } catch (IOException e) {
+                while (buf.hasRemaining()){
+                    int n=sc.write(buf);
+                    if(buf.remaining()>0){
+                        logger.info("[DATA_SEND_TO_HMI]] waiting 30 for next send. MSG Len "+msg.length()+" Written bytes: " + n + ", Remaining: " + buf.remaining()+" MSG "+msg.substring(0,30));
+                        Thread.sleep(30);
+                    }
+                }
+            }
+            catch (Exception e) {
                 //e.printStackTrace();
                 logger.error(e.toString());
             }
