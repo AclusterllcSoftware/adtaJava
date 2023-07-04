@@ -91,6 +91,62 @@ public class DatabaseHelper {
         }
         return resultJsonObject;
     }
+    public static JSONObject getProductsHistory(Connection connection,int machineId,JSONObject params){
+        JSONObject resultJsonObject = new JSONObject();
+        String query = "SELECT *,UNIX_TIMESTAMP(created_at) AS created_at_timestamp FROM product_history";
+        String totalQuery = "SELECT COUNT(id) as totalRecords FROM product_history";
+
+        query+=String.format(" WHERE machine_id=%d",machineId);
+        totalQuery+=String.format(" WHERE machine_id=%d",machineId);
+        if(params.has("to_timestamp")){
+            query+=String.format(" AND UNIX_TIMESTAMP(created_at)<=%d",params.getInt("to_timestamp"));
+            totalQuery+=String.format(" AND UNIX_TIMESTAMP(created_at)<=%d",params.getInt("to_timestamp"));
+        }
+        if(params.has("from_timestamp")){
+            query+=String.format(" AND UNIX_TIMESTAMP(created_at)>=%d",params.getInt("from_timestamp"));
+            totalQuery+=String.format(" AND UNIX_TIMESTAMP(created_at)>=%d",params.getInt("from_timestamp"));
+        }
+        if(params.has("reason")){
+            int reason=params.getInt("reason");
+            if(reason>-1){
+                query+=String.format(" AND reason=%d",params.getInt("reason"));
+                totalQuery+=String.format(" AND reason=%d",params.getInt("reason"));
+            }
+        }
+        if(params.has("search_barcode")){
+            String search_barcode=params.getString("search_barcode");
+            if(search_barcode.length()>0){
+
+                query+=String.format(" AND barcode1_string LIKE \"%%%s%%\"",search_barcode);
+                totalQuery+=String.format(" AND barcode1_string LIKE \"%%%s%%\"",search_barcode);
+            }
+        }
+
+        query+=" ORDER BY id DESC";
+        if(params.has("per_page")){
+            int per_page=params.getInt("per_page");
+            if(per_page>0){
+                int page=0;
+                if(params.has("page")){
+                    page=params.getInt("page");
+                }
+                if(page>0) {
+                    query += String.format(" LIMIT %d OFFSET %d", per_page, (page - 1) * per_page);
+                }
+                else{
+                    query+=String.format(" LIMIT %d",per_page);
+                }
+            }
+        }
+        query+=";";
+        totalQuery+=";";
+        JSONArray totalQueryResult=getSelectQueryResults(connection,totalQuery);
+        resultJsonObject.put("params", params);
+        resultJsonObject.put("totalRecords", totalQueryResult.getJSONObject(0).getInt("totalRecords"));
+        resultJsonObject.put("records", getSelectQueryResults(connection,query));
+        return resultJsonObject;
+
+    }
 
     public static JSONObject getStatisticsData(Connection connection,int machineId,String table,JSONObject params){
         JSONObject resultJsonObject = new JSONObject();

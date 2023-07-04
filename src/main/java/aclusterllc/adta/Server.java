@@ -248,6 +248,10 @@ public class Server implements Runnable {
                     JSONObject requestFunction=requestData.getJSONObject(i);
                     String requestFunctionName=requestFunction.getString("name");
                     switch (requestFunctionName) {
+                        case "products_history": {
+                            responseData.put(requestFunctionName,DatabaseHelper.getProductsHistory(connection,machine_id,requestFunction.getJSONObject("params")));
+                            break;
+                        }
                         case "statistics": {
                             responseData.put(requestFunctionName,DatabaseHelper.getStatisticsData(connection,machine_id,"statistics",requestFunction.getJSONObject("params")));
                             break;
@@ -518,24 +522,6 @@ public class Server implements Runnable {
                         };
                         Client client = cmClients.get(machineId);
                         client.sendBytes(messageBytes);
-                        break;
-                    }
-                    case "getProductsHistory": {
-                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                        JSONObject params = (JSONObject) jsonObject.get("params");
-                        long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
-                        long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
-                        int page = Integer.parseInt(params.get("page").toString());
-                        int per_page = Integer.parseInt(params.get("per_page").toString());
-                        JSONObject response = new JSONObject();
-                        response.put("type", "getProductsHistory");
-                        response.put("machineId", machineId);
-                        response.put("page", page);
-                        response.put("per_page", per_page);
-                        JSONObject productsResults = serverDBHandler.getProductsHistory(machineId, from_timestamp, to_timestamp, page, per_page);
-                        response.put("products", productsResults.get("products"));
-                        response.put("totalRecords", productsResults.get("totalRecords"));
-                        sendMessage(clientName, response.toString());
                         break;
                     }
                     case "getMaintViewData": {
