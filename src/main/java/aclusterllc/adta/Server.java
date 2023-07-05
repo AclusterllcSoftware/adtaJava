@@ -502,7 +502,9 @@ public class Server implements Runnable {
                             try {
                                 Connection dbConn = DataSource.getConnection();
                                 Statement stmt = dbConn.createStatement();
-                                String insertQuery = "INSERT IGNORE INTO statistics_counter (machine_id) SELECT DISTINCT machine_id FROM machines;INSERT IGNORE INTO statistics_bins_counter (machine_id,bin_id) SELECT DISTINCT machine_id,bin_id FROM bins;";
+                                String insertQuery = "INSERT IGNORE INTO statistics_counter (machine_id) SELECT DISTINCT machine_id FROM machines;" +
+                                        "INSERT IGNORE INTO statistics_oee (machine_id) SELECT DISTINCT machine_id FROM machines;" +
+                                        "INSERT IGNORE INTO statistics_bins_counter (machine_id,bin_id) SELECT DISTINCT machine_id,bin_id FROM bins;";
                                 dbConn.setAutoCommit(false);
                                 stmt.execute(insertQuery);
                                 dbConn.commit();

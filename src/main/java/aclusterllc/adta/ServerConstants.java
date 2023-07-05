@@ -89,9 +89,16 @@ public class ServerConstants {
         MESSAGE_IDS.put(46, "InductLineState Message");
         MESSAGE_IDS.put(47, "InductLineStateChange Message");
         MESSAGE_IDS.put(48, "PieceInducted Message");
-        //MESSAGE_IDS.put(50, "EStop Message");
+        MESSAGE_IDS.put(49, "Motor Speed Message");
+        MESSAGE_IDS.put(50, "EStop Message");
+        MESSAGE_IDS.put(51, "Machine Stopped Message");
+        MESSAGE_IDS.put(52, "Belt Status Message");
         MESSAGE_IDS.put(53, "Outputs Message");
         MESSAGE_IDS.put(54, "Param Value Message");
+        MESSAGE_IDS.put(55, "RequestParams Message");
+        MESSAGE_IDS.put(56, "Counter Message");
+        MESSAGE_IDS.put(57, "OEEData Message");
+        MESSAGE_IDS.put(58, "Shutdown Message");
 
 
         MESSAGE_IDS.put(120, "SetMode Message");
