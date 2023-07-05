@@ -691,16 +691,21 @@ public class MessageHandler {
                 if(messageId == 16) {
                    //System.out.println("Sync Response");
                 }
+                else if(messageId == 58) {
+                    //put in queue
+                }
                 else if(messageId == 30) {
                    //System.out.println("Ping Response");
                 }
             }
-            List<Integer> dbWrapperPostMessages=Arrays.asList(11,12,13,49,50,51,52,55,56);
+            List<Integer> dbWrapperPostMessages=Arrays.asList(11,12,13,49,50,51,52,55,56,58);
             if(dbWrapperPostMessages.contains(messageId))
             {
                 JSONObject params=new JSONObject();
                 params.put("object",this.client);
-                params.put("bodyBytes",bodyBytes);
+                if(bodyBytes != null){
+                    params.put("bodyBytes",bodyBytes);
+                }
                 params.put("messageId",messageId);
                 dbHandler.append(params);
                 //params.put("messageLength",messageLength);//bodyBytes.length
@@ -870,7 +875,10 @@ public class MessageHandler {
 //    params.put("messageId",messageId);
     public void handleMessage(JSONObject params){
         int messageId= (int) params.get("messageId");
-        byte[] bodyBytes= (byte[]) params.get("bodyBytes");
+        byte[] bodyBytes = null;
+        if(params.has("bodyBytes")){
+            bodyBytes= (byte[]) params.get("bodyBytes");
+        }
         if(messageId==11 || messageId==13){
             if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1) {
 
@@ -966,6 +974,17 @@ public class MessageHandler {
             int counterCount = (int) bytesToLong(Arrays.copyOfRange(bodyBytes, 4, 8));//4,5,6,7
             for(int i=0;i<counterCount;i++){
                 DBCache.countersCurrentValue.put(this.client.machineId+"_"+(i+1),(int) bytesToLong(Arrays.copyOfRange(bodyBytes, 8+i*4, 12+i*4)));
+            }
+        }
+        else if(messageId==58){
+            Runtime r = Runtime.getRuntime();
+            try
+            {
+                logger.info("Shutting down after 2 seconds.");
+                r.exec("shutdown -s -t 2");
+            }
+            catch (IOException ex) {
+                logger.error(CommonHelper.getStackTraceString(ex));
             }
         }
         else{
