@@ -15,28 +15,38 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import  java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Date;
 
 
 public class Test {
     public static void main(String[] args){
-        try {
-            Connection dbConn = DataSource.getConnection();
-            Statement stmt = dbConn.createStatement();
-            String insertQueryHourly= "UPDATE statistics_bins_hourly set sc0=2 where sc1=1;";
-            dbConn.setAutoCommit(false);
-            int num_row = stmt.executeUpdate(insertQueryHourly);
-            System.out.println(num_row);
-            dbConn.commit();
-            dbConn.setAutoCommit(true);
-            stmt.close();
-            dbConn.close(); // connection close
-        }
-        catch (Exception e) {
-            System.out.println("Error");
-        }
+        Calendar rightNow = Calendar.getInstance();
+
+        System.out.println(LocalDateTime.now().getHour());
+
+                       // 2021-03-24 16:34:26.66
+    }
+    public static void mainSimpleDate(String[] args){
+        //Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        Date date = new Date();
+        SimpleDateFormat ft =new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        System.out.println(ft.format(date));                      // 2021-03-24 16:34:26.66
+//        try {
+//
+//            Date date=new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse("01/01/1970 06:00:00");
+//            //SimpleDateFormat ft =new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+//            System.out.println(date.getTime());
+//        } catch (ParseException e) {
+//            throw new RuntimeException(e);
+//        }
     }
     public static void main_db_update(String[] args){
         try {
