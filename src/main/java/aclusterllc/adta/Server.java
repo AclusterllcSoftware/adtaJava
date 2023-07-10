@@ -280,6 +280,10 @@ public class Server implements Runnable {
                             responseData.put(requestFunctionName,DatabaseHelper.getStatisticsData(connection,machine_id,"statistics_bins_hourly",requestFunction.getJSONObject("params")));
                             break;
                         }
+                        case "statistics_oee": {
+                            responseData.put(requestFunctionName,DatabaseHelper.getStatisticsData(connection,machine_id,"statistics_oee",requestFunction.getJSONObject("params")));
+                            break;
+                        }
                     }
                 }
                 connection.close();
