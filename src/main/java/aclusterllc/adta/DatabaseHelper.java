@@ -91,6 +91,31 @@ public class DatabaseHelper {
         }
         return resultJsonObject;
     }
+    public static JSONArray getActiveAlarms(Connection connection,int machineId) {
+        String query = String.format("SELECT *,UNIX_TIMESTAMP(date_active) AS date_active_timestamp FROM active_alarms WHERE machine_id=%d ORDER BY id DESC", machineId);
+        return  getSelectQueryResults(connection,query);
+    }
+    public static JSONObject getDeviceStates(Connection connection,int machineId){
+        String query = String.format("SELECT * FROM device_states WHERE machine_id=%d", machineId);
+        JSONObject queryResult=getSelectQueryResults(connection,query,new String[] { "machine_id", "device_id"});
+        //for main plc manually set status
+        JSONObject plc= (JSONObject) queryResult.get(machineId+"_2");
+        plc.put("state",ServerConstants.plcConnectStatus.get(machineId));
+        queryResult.put(machineId+"_2",plc);
+        return queryResult;
+    }
+    public static JSONObject getInputStates(Connection connection,int machineId){
+        String query = String.format("SELECT * FROM input_states WHERE machine_id=%d", machineId);
+        return getSelectQueryResults(connection,query,new String[] { "machine_id", "input_id"});
+    }
+    public static int getMachineMode(Connection connection,int machineId){
+        String query = String.format("SELECT machine_mode FROM machines WHERE machine_id=%d", machineId);
+        JSONArray modeResult=getSelectQueryResults(connection,query);
+        if(modeResult.length()>0){
+            return modeResult.getJSONObject(0).getInt("machine_mode");
+        }
+        return 0;
+    }
     public static JSONObject getProductsHistory(Connection connection,int machineId,JSONObject params){
         JSONObject resultJsonObject = new JSONObject();
         String query = "SELECT *,UNIX_TIMESTAMP(created_at) AS created_at_timestamp FROM product_history";

@@ -248,6 +248,26 @@ public class Server implements Runnable {
                     JSONObject requestFunction=requestData.getJSONObject(i);
                     String requestFunctionName=requestFunction.getString("name");
                     switch (requestFunctionName) {
+                        case "active_alarms": {
+                            responseData.put(requestFunctionName,DatabaseHelper.getActiveAlarms(connection,machine_id));
+                            break;
+                        }
+                        case "device_states": {
+                            responseData.put(requestFunctionName,DatabaseHelper.getDeviceStates(connection,machine_id));
+                            break;
+                        }
+                        case "input_states": {
+                            responseData.put(requestFunctionName,DatabaseHelper.getInputStates(connection,machine_id));
+                            break;
+                        }
+                        case "machine_mode": {
+                            responseData.put(requestFunctionName,DatabaseHelper.getMachineMode(connection,machine_id));
+                            break;
+                        }
+                        case "motors_current_speed": {
+                            responseData.put(requestFunctionName,DBCache.motorsCurrentSpeed);
+                            break;
+                        }
                         case "products_history": {
                             responseData.put(requestFunctionName,DatabaseHelper.getProductsHistory(connection,machine_id,requestFunction.getJSONObject("params")));
                             break;
