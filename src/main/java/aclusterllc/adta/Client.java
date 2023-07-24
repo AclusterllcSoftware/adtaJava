@@ -330,7 +330,7 @@ public class Client implements Runnable {
 						}
 						byte[] messageBytes = new byte[]{0, 0, 0, 126, 0, 0, 0, 12,(byte) (maxtput >> 24), (byte) (maxtput >> 16), (byte) (maxtput >> 8), (byte) (maxtput)};
 						sendBytes(messageBytes);
-						System.out.println(maxtput);
+						//System.out.println(maxtput);
 						connection.close();
 					}
 				}

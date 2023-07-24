@@ -1270,6 +1270,19 @@ public class ServerDBHandler {
         }
         return resultsJsonArray;
     }
+    public JSONArray getStatisticsOeeLast(int machineId){
+        JSONArray resultsJsonArray = new JSONArray();
+        try {
+            Connection dbConn = DataSource.getConnection();
+            String query = String.format("SELECT *,UNIX_TIMESTAMP(created_at) AS created_at_timestamp FROM statistics_oee WHERE machine_id=%d ORDER BY id DESC LIMIT 1", machineId);
+            resultsJsonArray=DatabaseHelper.getSelectQueryResults(dbConn,query);
+            dbConn.close();
+        }
+        catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return resultsJsonArray;
+    }
     public JSONArray getStatisticsBins(int machineId,long from_timestamp,long to_timestamp){
         JSONArray resultsJsonArray = new JSONArray();
         try {

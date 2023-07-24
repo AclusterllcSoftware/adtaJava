@@ -459,6 +459,8 @@ public class Server implements Runnable {
                         response.put("inputsStates", serverDBHandler.getInputsStates(machineId));
                         response.put("conveyorsStates", serverDBHandler.getConveyorsStates(machineId));
                         response.put("activeAlarms", serverDBHandler.getActiveAlarms(machineId));
+                        response.put("statistics_counter", serverDBHandler.getStatisticsCounterLast(machineId));
+                        response.put("statistics_oee", serverDBHandler.getStatisticsOeeLast(machineId));
                         sendMessage(clientName, response.toString());
                         break;
                     }
