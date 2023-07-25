@@ -475,6 +475,8 @@ public class Server implements Runnable {
                         response.put("conveyorsStates", serverDBHandler.getConveyorsStates(machineId));
                         response.put("devicesStates", serverDBHandler.getDevicesStates(machineId));
                         response.put("activeAlarms", serverDBHandler.getActiveAlarms(machineId));
+                        response.put("statistics_counter", serverDBHandler.getStatisticsCounterLast(machineId));
+                        response.put("statistics_oee", serverDBHandler.getStatisticsOeeLast(machineId));
                         sendMessage(clientName, response.toString());
                         break;
                     }
@@ -491,6 +493,8 @@ public class Server implements Runnable {
                         response.put("motorsCurrentSpeed", DBCache.motorsCurrentSpeed);
                         response.put("activeAlarms", serverDBHandler.getActiveAlarms(machineId));
                         response.put("machineMode", serverDBHandler.getMachineMode(machineId));
+                        response.put("statistics_counter", serverDBHandler.getStatisticsCounterLast(machineId));
+                        response.put("statistics_oee", serverDBHandler.getStatisticsOeeLast(machineId));
                         sendMessage(clientName, response.toString());
                         break;
                     }
