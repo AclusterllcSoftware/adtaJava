@@ -870,7 +870,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject resutlJson = new JSONObject();
-                resutlJson.put("id", rs.getInt("id"));
+                resutlJson.put("id", rs.getLong("id"));
                 resutlJson.put("carton_id", rs.getString("carton_id"));
                 resutlJson.put("dest1", rs.getInt("dest1"));
                 resutlJson.put("dest2", rs.getInt("dest2"));
@@ -985,7 +985,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
-                row.put("id",rs.getInt("id"));
+                row.put("id",rs.getLong("id"));
                 row.put("total_read",rs.getInt("total_read"));
                 row.put("no_read",rs.getInt("no_read"));
                 row.put("no_code",rs.getInt("no_code"));
@@ -1044,7 +1044,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
-                row.put("id",rs.getInt("id"));
+                row.put("id",rs.getLong("id"));
                 row.put("total_read",rs.getInt("total_read"));
                 row.put("no_read",rs.getInt("no_read"));
                 row.put("no_code",rs.getInt("no_code"));
@@ -1103,7 +1103,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
-                row.put("id",rs.getInt("id"));
+                row.put("id",rs.getLong("id"));
                 row.put("total_read",rs.getInt("total_read"));
                 row.put("no_read",rs.getInt("no_read"));
                 row.put("no_code",rs.getInt("no_code"));
@@ -1162,7 +1162,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
-                row.put("id",rs.getInt("id"));
+                row.put("id",rs.getLong("id"));
                 row.put("total_read",rs.getInt("total_read"));
                 row.put("no_read",rs.getInt("no_read"));
                 row.put("no_code",rs.getInt("no_code"));
@@ -1221,7 +1221,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
-                row.put("id",rs.getInt("id"));
+                row.put("id",rs.getLong("id"));
                 row.put("total_read",rs.getInt("total_read"));
                 row.put("no_read",rs.getInt("no_read"));
                 row.put("no_code",rs.getInt("no_code"));
@@ -1293,7 +1293,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
-                row.put("id",rs.getInt("id"));
+                row.put("id",rs.getLong("id"));
                 row.put("bin_id",rs.getInt("bin_id"));
                 row.put("recirc",rs.getInt("recirc"));
                 row.put("reject",rs.getInt("reject"));
@@ -1337,7 +1337,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
-                row.put("id",rs.getInt("id"));
+                row.put("id",rs.getLong("id"));
                 row.put("bin_id",rs.getInt("bin_id"));
                 row.put("recirc",rs.getInt("recirc"));
                 row.put("reject",rs.getInt("reject"));
@@ -1381,7 +1381,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
-                row.put("id",rs.getInt("id"));
+                row.put("id",rs.getLong("id"));
                 row.put("bin_id",rs.getInt("bin_id"));
                 row.put("recirc",rs.getInt("recirc"));
                 row.put("reject",rs.getInt("reject"));
@@ -1450,7 +1450,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
-                row.put("id",rs.getInt("id"));
+                row.put("id",rs.getLong("id"));
                 row.put("output_id",rs.getInt("output_id"));
                 row.put("state",rs.getInt("state"));
                 row.put("machineId",machineId);
@@ -1475,7 +1475,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
-                row.put("id",rs.getInt("id"));
+                row.put("id",rs.getLong("id"));
                 row.put("input_id",rs.getInt("input_id"));
                 row.put("state",rs.getInt("state"));
                 row.put("machineId",machineId);
@@ -1524,7 +1524,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
-                row.put("id",rs.getInt("id"));
+                row.put("id",rs.getLong("id"));
                 row.put("input_id",rs.getInt("input_id"));
                 row.put("input_state",rs.getInt("input_state"));
                 row.put("machineId",machineId);
@@ -1569,7 +1569,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
-                row.put("id",rs.getInt("id"));
+                row.put("id",rs.getLong("id"));
                 row.put("device_id",rs.getInt("device_id"));
                 if(row.getInt("device_id")==2){
                     if(ServerConstants.plcConnectStatus.get(machineId) == 1){
@@ -1666,7 +1666,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
-                row.put("id",rs.getInt("id"));
+                row.put("id",rs.getLong("id"));
                 row.put("product_id",rs.getInt("product_id"));
                 row.put("machine_id",rs.getInt("machine_id"));
                 row.put("mail_id",rs.getInt("mail_id"));
@@ -1724,7 +1724,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
-                row.put("id",rs.getInt("id"));
+                row.put("id",rs.getLong("id"));
                 row.put("machine_id",rs.getInt("machine_id"));
                 row.put("alarm_id",rs.getInt("alarm_id"));
                 row.put("alarm_type",rs.getInt("alarm_type"));
@@ -1756,7 +1756,7 @@ public class ServerDBHandler {
             while (rs.next())
             {
                 JSONObject row=new JSONObject();
-                row.put("id",rs.getInt("id"));
+                row.put("id",rs.getLong("id"));
                 //row.put("machine_id",rs.getInt("machine_id"));
                 row.put("machine_id",rs.getInt("machine_id"));
                 int alarm_id=rs.getInt("alarm_id");
