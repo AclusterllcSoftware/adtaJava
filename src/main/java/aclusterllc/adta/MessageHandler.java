@@ -244,37 +244,6 @@ public class MessageHandler {
                         returnMsg.add("DB operations done");
                     }
                 }
-                else if(messageId == 44) {
-                    byte[] mailIdBytes = Arrays.copyOfRange(dataBytes, 0, 4);
-                    byte[] sensorIdBytes = Arrays.copyOfRange(dataBytes, 4, 8);
-                    byte[] sensorStatusBytes = Arrays.copyOfRange(dataBytes, 8, 9);
-
-
-                    long mailId = bytesToLong(mailIdBytes);
-                    int sensorId = (int) bytesToLong(sensorIdBytes);
-                    String sensorName = DBCache.getSensorData(machineId, sensorId);
-                    int sensorStatus = (int) bytesToLong(sensorStatusBytes);
-
-                    if((sensorId == 1) && (sensorStatus == 1)) {
-                        if (dbWrapper.processSensorHits(mailId, machineId)) {
-                            DBCache.increaseMySQLProductId(mailId);
-                            long productId = DBCache.getMySQLProductId(mailId);
-                            if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1){
-                                String newMailPieceXML = "<new_mailpiece piece_id=\"" + productId + "\" lane=\"" + machineId + "\" />";
-                                this.client.threeSixtyClient.sendMessage(4, newMailPieceXML, mailId, machineId);
-                            }
-                            returnMsg.add("DB operations done");
-                        }
-                    }
-
-                    long productId = DBCache.getMySQLProductId(mailId);
-                    if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1){
-                        String sensorHitXML = "<sensor_hit piece_id=\"" + productId + "\" lane=\"" + machineId + "\" name=\"" + sensorName + "\">" + sensorStatus + "</sensor_hit >";
-                        this.client.threeSixtyClient.sendMessage(3, sensorHitXML, mailId, machineId);
-                    }
-
-                    logger.info("Sensor "+ sensorId+" hit=" + sensorStatus + " for ID=" + mailId);
-                }
                 else if(messageId == 45) {
                     byte[] eventIdBytes = Arrays.copyOfRange(dataBytes, 0, 4);
                     int eventId = (int) bytesToLong(eventIdBytes);
@@ -420,250 +389,6 @@ public class MessageHandler {
                         logger.error("Error in single status change message. Message ID = " + messageId + " Machine ID = " + machineId);
                     }
                 }
-                else if(messageId == 20) {
-                    if(dataBytes.length == 21) {
-                        //MAIL_ID, Length, Width, Height, Weight, RejectCode
-                        byte[] mailIdBytes = Arrays.copyOfRange(dataBytes, 0, 4);
-                        byte[] lengthBytes = Arrays.copyOfRange(dataBytes, 4, 8);
-                        byte[] widthBytes = Arrays.copyOfRange(dataBytes, 8, 12);
-                        byte[] heightBytes = Arrays.copyOfRange(dataBytes, 12, 16);
-                        byte[] weightBytes = Arrays.copyOfRange(dataBytes, 16, 20);
-                        byte[] rejectCodeByte = Arrays.copyOfRange(dataBytes, 20, 21);
-
-                        long mailId = bytesToLong(mailIdBytes);
-                        long length = bytesToLong(lengthBytes);
-                        long width = bytesToLong(widthBytes);
-                        long height = bytesToLong(heightBytes);
-                        long weight = bytesToLong(weightBytes);
-                        int rejectCode = (int) bytesToLong(rejectCodeByte);
-
-                        /*if(DBCache.checkExistingProduct(mailId)) {
-                            DBCache.increaseMySQLProductId();
-                        }*/
-
-                        if (dbWrapper.processDimension(mailId, length, width, height, weight, rejectCode, machineId)) {
-                            //DBCache.increaseMySQLProductId();
-                            long productId = DBCache.getMySQLProductId(mailId);
-                            logger.info("Dimension Processed. ID=" + mailId);
-                            if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1){
-
-                                String lengthUnit = ServerConstants.configuration.get("threesixty_length_unit");
-                                String weightUnit = ServerConstants.configuration.get("threesixty_weight_unit");
-
-
-                                double lengthForThreeSixty = length;
-                                double widthForThreeSixty = width;
-                                double heightForThreeSixty = height;
-
-                                if(lengthUnit.equals("in")) {
-                                    lengthForThreeSixty = length / 25.4;
-                                    widthForThreeSixty = width / 25.4;
-                                    heightForThreeSixty = height / 25.4;
-                                }
-
-                                DecimalFormat df = new DecimalFormat("#.##");
-                                df.setRoundingMode(RoundingMode.UP);
-
-                                double weightForThreeSixty = weight;
-
-                                if(weightUnit.equals("oz")) {
-                                    weightForThreeSixty = weight / 28.35;
-                                } else if(weightUnit.equals("lb")) {
-                                    weightForThreeSixty = weight / 453.6;
-                                }
-
-                                String readerXML = "<reader piece_id=\"" + productId + "\" name=\"Length Reader\" lane=\"" + machineId + "\" type=\"LENGTH\" unit=\""+ lengthUnit +"\">" + df.format(lengthForThreeSixty) + "</reader>";
-                                this.client.threeSixtyClient.sendMessage(4, readerXML, mailId, machineId);
-                                readerXML = "<reader piece_id=\"" + productId + "\" name=\"Width Reader\" lane=\"" + machineId + "\" type=\"WIDTH\" unit=\""+ lengthUnit +"\">" + df.format(widthForThreeSixty) + "</reader>";
-                                this.client.threeSixtyClient.sendMessage(4, readerXML, mailId, machineId);
-                                readerXML = "<reader piece_id=\"" + productId + "\" name=\"Height Reader\" lane=\"" + machineId + "\" type=\"HEIGHT\" unit=\""+ lengthUnit +"\">" + df.format(heightForThreeSixty) + "</reader>";
-                                this.client.threeSixtyClient.sendMessage(4, readerXML, mailId, machineId);
-                                readerXML = "<reader piece_id=\"" + productId + "\" name=\"Weight Reader\" lane=\"" + machineId + "\" type=\"WEIGHT\" unit=\""+ weightUnit +"\">" + df.format(weightForThreeSixty) + "</reader>";
-                                this.client.threeSixtyClient.sendMessage(4, readerXML, mailId, machineId);
-                            }
-                            returnMsg.add("DB operations done");
-                        }
-                    } else {
-                        //System.err.println("Error in dimension message.");
-                        logger.error("Error in dimension message.");
-                    }
-                }
-                else if(messageId == 21) {
-                    byte[] mailIdBytes = Arrays.copyOfRange(dataBytes, 0, 4);
-                    long mailId = bytesToLong(mailIdBytes);
-
-                    byte[] numberOfResultsBytes = Arrays.copyOfRange(dataBytes, 4, 6);
-                    int numberOfResults = (int) bytesToLong(numberOfResultsBytes);
-
-                    //System.out.println("BARCODE NUM: " + numberOfResults);
-                    int barcodeType = 0;
-
-                    //No Question mark only empty
-                    String barcodeStringCleaned = "";
-
-                    Map<Integer, Map<String, String>> barcodeTypeWithString = new HashMap<>();
-                    Map<Integer, Map<Integer, String>> barcodesFor360 = new HashMap<>();
-
-                    if(numberOfResults > 0) {
-                        int startOfCurrentBCBytes = 0;
-                        byte[] barcodeFullBytes = Arrays.copyOfRange(dataBytes, 6, dataBytes.length);
-                        //System.out.println(barcodeFullBytes);
-                        for(int currentBC = 0; currentBC < numberOfResults; currentBC++) {
-                            int columnCounter = currentBC + 1;
-
-                            byte[] barcodeTypeByte = Arrays.copyOfRange(dataBytes, 6+startOfCurrentBCBytes, 7+startOfCurrentBCBytes);
-                            barcodeType = (int) bytesToLong(barcodeTypeByte);
-                            //System.out.println("Type:" + barcodeType);
-                            byte[] barcodeLengthBytes = Arrays.copyOfRange(dataBytes, 7+startOfCurrentBCBytes, 9+startOfCurrentBCBytes);
-                            int barcodeStringLength = (int) bytesToLong(barcodeLengthBytes);
-                            //System.out.println("BC #" + currentBC + " L:" + barcodeStringLength);
-                            byte[] barcodeStringBytes = Arrays.copyOfRange(dataBytes, 9+startOfCurrentBCBytes, 9+startOfCurrentBCBytes+barcodeStringLength);
-
-                            String barcodeString = new String(barcodeStringBytes, StandardCharsets.UTF_8);
-                            barcodeStringCleaned = barcodeString.replaceAll("\\P{Print}", "");
-
-                            //System.out.println("CODE: " + barcodeStringCleaned);
-
-                            //only limited upto barcode3
-                            if(columnCounter < 4) {
-                                String barcodeTypeColumnName = "barcode"+ columnCounter + "_type";
-                                String barcodeStringColumnName = "barcode"+ columnCounter + "_string";
-
-                                Map<String, String> barcodeAndString = new HashMap<>();
-                                barcodeAndString.put(barcodeTypeColumnName, Integer.toString(barcodeType));
-                                barcodeAndString.put(barcodeStringColumnName, barcodeStringCleaned);
-
-                                barcodeTypeWithString.put(columnCounter, barcodeAndString);
-
-                                Map<Integer, String> barcodeFor360 = new HashMap<>();
-                                barcodeFor360.put(barcodeType, barcodeStringCleaned);
-
-                                barcodesFor360.put(columnCounter, barcodeFor360);
-                            }
-
-                            startOfCurrentBCBytes = 3 + startOfCurrentBCBytes + barcodeStringLength;
-                        }
-                    } else {
-                        Map<String, String> barcodeAndString = new HashMap<>();
-                        barcodeAndString.put("barcode1_type", Integer.toString(barcodeType));
-                        barcodeAndString.put("barcode1_string", barcodeStringCleaned);
-
-                        barcodeTypeWithString.put(1, barcodeAndString);
-
-                        Map<Integer, String> barcodeFor360 = new HashMap<>();
-                        barcodeFor360.put(barcodeType, barcodeStringCleaned);
-
-                        barcodesFor360.put(1, barcodeFor360);
-                    }
-
-                    if (dbWrapper.processBarcodeResult(mailId, barcodeTypeWithString, numberOfResults, machineId)) {
-                        //logger.info("Barcode processed. ID=" + mailId);
-                        //System.out.println("mailId:"+mailId+",numberOfResults: "+numberOfResults+",Barcodes: "+barcodeTypeWithString);
-                        if(Integer.parseInt(ServerConstants.configuration.get("ingram_enable"))==1) {
-                            //Reply message 124 start
-                            //messageId == 124 = SortMailpiece; Message length is 16
-                            int dest1 = 31;
-                            int dest2 = 0;
-                            if (numberOfResults > 0) {
-                                String barcodes = "'" + barcodeTypeWithString.get(1).get("barcode1_string") + "'";
-                                if (numberOfResults > 1) {
-                                    barcodes += ",'" + barcodeTypeWithString.get(2).get("barcode2_string") + "'";
-                                    if (numberOfResults > 2) {
-                                        barcodes += ",'" + barcodeTypeWithString.get(3).get("barcode3_string") + "'";
-                                    }
-                                }
-                                logger.info("Query from  ingram product");
-                                try {
-
-                                    Connection dbConn = DataSource.getConnection();
-                                    Statement stmt = dbConn.createStatement();
-                                    String tbl = "ingram_products";
-                                    //String barcode1_string= barcodeTypeWithString.get(1).get("barcode1_string");
-                                    String query = String.format("SELECT * FROM %s WHERE carton_id IN(%s);", tbl, barcodes);
-                                    logger.info("Barcode Query is" + query);
-                                    ResultSet rs = stmt.executeQuery(query);
-                                    if (rs.next()) {
-
-                                        dest1 = rs.getInt("dest1");
-                                        dest2 = rs.getInt("dest2");
-                                        logger.info("Found barcode." + rs.getInt("id") + "-" + rs.getString("carton_id") + "-" + dest1 + "-" + dest2);
-                                    } else {
-                                        logger.info("Did not Found barcode:" + barcodes);
-                                    }
-                                    rs.close();
-                                    stmt.close();
-                                    dbConn.close();
-                                } catch (Exception e) {
-                                    //e.printStackTrace();
-                                    logger.error("Query from  ingram product Exception." + barcodes);
-                                    logger.error(e.toString());
-                                }
-                            }
-                            byte[] headerBytesForSend = new byte[]{0, 0, 0, 124, 0, 0, 0, 16};
-                            byte[] bodyBytesForSend = new byte[8];
-                            //4byte mailId
-                            bodyBytesForSend[0] = (byte) (mailId >> 24);
-                            bodyBytesForSend[1] = (byte) (mailId >> 16);
-                            bodyBytesForSend[2] = (byte) (mailId >> 8);
-                            bodyBytesForSend[3] = (byte) (mailId);
-                            //2byte dest1
-                            bodyBytesForSend[4] = (byte) (dest1 >> 8);//always 0 because less than 256
-                            bodyBytesForSend[5] = (byte) (dest1);
-                            //2byte dest2
-                            bodyBytesForSend[6] = (byte) (dest2 >> 8);//always 0 because less than 256
-                            bodyBytesForSend[7] = (byte) (dest2);
-                            client.sendBytes(joinTwoBytesArray(headerBytesForSend, bodyBytesForSend));
-                            //                        Reply message 124 end
-                        }
-
-                        if(barcodesFor360.size() > 0) {
-                            for (Map.Entry<Integer, Map<Integer, String>> e : barcodesFor360.entrySet()) {
-                                Integer k = e.getKey();
-                                Map<Integer, String> v = e.getValue();
-                                HashMap<Integer, String> typeAndString = (HashMap<Integer, String>) v;
-                                for (Map.Entry<Integer, String> entry : typeAndString.entrySet()) {
-                                    Integer bcType = entry.getKey();
-                                    String bcString = entry.getValue();
-                                    bcString = bcString.replace("'", "");
-                                    bcString = bcString.replace("\"", "");
-                                    String bcTypeFor360 = ServerConstants.CONVERTED_BARCODES_FOR_360.get(bcType);
-
-                                    long productId = DBCache.getMySQLProductId(mailId);
-                                    if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1){
-                                        String readerXML = "<reader piece_id=\"" + productId + "\" name=\"Barcode Reader\" lane=\"" + machineId + "\" type=\"" + bcTypeFor360 + "\">" + bcString + "</reader>";
-                                        this.client.threeSixtyClient.sendMessage(4, readerXML, mailId, machineId);
-                                    }
-                                }
-                            }
-                        }
-                        returnMsg.add("DB operations done");
-                    }
-                }
-                else if(messageId == 22) {
-                    byte[] mailIdBytes = Arrays.copyOfRange(dataBytes, 0, 4);
-                    byte[] destinationBytes = Arrays.copyOfRange(dataBytes, 4, 6);
-                    byte[] altDestinationBytes = Arrays.copyOfRange(dataBytes, 6, 8);
-                    byte[] finalDestinationBytes = Arrays.copyOfRange(dataBytes, 8, 10);
-                    byte[] reasonBytes = Arrays.copyOfRange(dataBytes, 10, 11);
-
-                    long mailId = bytesToLong(mailIdBytes);
-                    int destination = (int) bytesToLong(destinationBytes);
-                    int altDestination = (int) bytesToLong(altDestinationBytes);
-                    int finalDestination = (int) bytesToLong(finalDestinationBytes);
-                    int reason = (int) bytesToLong(reasonBytes);
-                    logger.error("Destination confirmed received. MailId=" + mailId);
-                    if (dbWrapper.processConfirmDestination(mailId, destination, altDestination, finalDestination, reason, machineId)) {
-                        logger.error("Destination confirmed DB operation done. MailId=" + mailId);
-                        long productId = DBCache.getMySQLProductId(mailId);
-                        String reasonText = ServerConstants.BIN_REJECT_CODES.get(reason);
-                        if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1){
-                            String pieceStackedXML = "<piece_stacked  piece_id=\"" + productId + "\" bin=\"" + finalDestination + "\" reason=\"" + reasonText + "\">" + finalDestination + "</piece_stacked>";
-                            this.client.threeSixtyClient.sendMessage(4, pieceStackedXML, mailId, machineId);
-                        }
-                        DBCache.removeSQLId(mailId);
-                        returnMsg.add("DB operations done");
-                    }
-                }
                 else if(messageId==53){
                     int[] bitSeq = bitSequenceTranslator(dataBytes, 4);
                     String query = "INSERT INTO io_output_states (`machine_id`, `output_id`, `state`,`created_at`) VALUES ";
@@ -698,7 +423,7 @@ public class MessageHandler {
                    //System.out.println("Ping Response");
                 }
             }
-            List<Integer> dbWrapperPostMessages=Arrays.asList(11,12,13,49,50,51,52,55,56,57,58);
+            List<Integer> dbWrapperPostMessages=Arrays.asList(11,12,13,20,21,22,44,49,50,51,52,55,56,57,58);
             if(dbWrapperPostMessages.contains(messageId))
             {
                 JSONObject params=new JSONObject();
@@ -898,6 +623,110 @@ public class MessageHandler {
                     sendAllBinStatusTo360();
                 }
                 break;
+            case 20: {
+                byte[] dataBytes = Arrays.copyOfRange(bodyBytes, 4, bodyBytes.length);
+                if(dataBytes.length == 21) {
+                    try {
+
+                        byte[] mailIdBytes = Arrays.copyOfRange(dataBytes, 0, 4);
+                        byte[] lengthBytes = Arrays.copyOfRange(dataBytes, 4, 8);
+                        byte[] widthBytes = Arrays.copyOfRange(dataBytes, 8, 12);
+                        byte[] heightBytes = Arrays.copyOfRange(dataBytes, 12, 16);
+                        byte[] weightBytes = Arrays.copyOfRange(dataBytes, 16, 20);
+                        byte[] rejectCodeByte = Arrays.copyOfRange(dataBytes, 20, 21);
+
+                        long mailId = bytesToLong(mailIdBytes);
+                        long length = bytesToLong(lengthBytes);
+                        long width = bytesToLong(widthBytes);
+                        long height = bytesToLong(heightBytes);
+                        long weight = bytesToLong(weightBytes);
+                        int reject_code = (int) bytesToLong(rejectCodeByte);
+                        Connection connection = DataSource.getConnection();
+                        String queryCheckProduct = format("SELECT * FROM products WHERE machine_id=%d AND mail_id=%d;", this.client.machineId, mailId);
+                        JSONArray queryCheckProductResult = DatabaseHelper.getSelectQueryResults(connection, queryCheckProduct);
+                        if (queryCheckProductResult.length() > 0) {
+                            JSONObject productInfo= queryCheckProductResult.getJSONObject(0);
+
+                            String query = format("UPDATE products SET length=%d, width=%d, height=%d, weight=%d, reject_code=%d, dimension_at=NOW() WHERE id=%d;",
+                                    length, width, height, weight, reject_code, productInfo.getInt("id"));
+                            try {
+                                DatabaseHelper.runMultipleQuery(connection, query);
+                                String notificationStr = ServerConstants.MESSAGE_IDS.get(messageId)+" [" + messageId + "]" + "[M:" + this.client.machineId + "]";
+                                this.client.notifyListeners("Server", notificationStr);
+
+                            } catch (SQLException e) {
+                                logger.error(CommonHelper.getStackTraceString(e));
+                            }
+                        }
+                        else {
+                            logger.warn("[PRODUCT][20] Product not found found. MailId=" + mailId);
+                        }
+                    }
+                    catch (Exception e) {
+                        logger.error(e.toString());
+                    }
+
+                }
+                else {
+                    logger.warn("[PRODUCT][20] Data Message length not 21. Length: "+dataBytes.length);
+                }
+                break;
+            }
+            case 21: {
+                break;
+            }
+            case 22: {
+                break;
+            }
+            case 44: {
+                byte[] dataBytes = Arrays.copyOfRange(bodyBytes, 4, bodyBytes.length);
+                byte[] mailIdBytes = Arrays.copyOfRange(dataBytes, 0, 4);
+                byte[] sensorIdBytes = Arrays.copyOfRange(dataBytes, 4, 8);
+                byte[] sensorStatusBytes = Arrays.copyOfRange(dataBytes, 8, 9);
+                long mailId = bytesToLong(mailIdBytes);
+                int sensorId = (int) bytesToLong(sensorIdBytes);
+                String sensorName = DBCache.getSensorData(this.client.machineId, sensorId);
+                int sensorStatus = (int) bytesToLong(sensorStatusBytes);
+                logger.info("[PRODUCT][44] sensorId= "+sensorId+". sensorStatus="+sensorStatus+". MailId="+mailId);
+                if((sensorId == 1) && (sensorStatus == 1)) {
+                    try {
+                        Connection connection = DataSource.getConnection();
+                        String query="";
+                        String queryOldProduct=format("SELECT * FROM products WHERE machine_id=%d AND mail_id=%d;", this.client.machineId, mailId);
+                        JSONArray previousProductInfo=DatabaseHelper.getSelectQueryResults(connection,queryOldProduct);
+                        if(previousProductInfo.length()>0){
+                            int oldProductId=previousProductInfo.getJSONObject(0).getInt("id");
+                            logger.info("[PRODUCT][44] Duplicate Product found. MailId="+mailId+" productId="+oldProductId);
+                            query+=format("INSERT INTO products_overwritten SELECT * FROM products WHERE id=%d;", oldProductId);
+                            query+=format("DELETE FROM products WHERE id=%d;", oldProductId);
+                        }
+
+                        connection.setAutoCommit(false);
+                        Statement stmt = connection.createStatement();
+                        if(query.length()>0){
+                            stmt.execute(query);
+                        }
+                        query = format("INSERT INTO products (`machine_id`, `mail_id`) VALUES (%d, %d);",this.client.machineId, mailId);
+                        stmt.executeUpdate(query,Statement.RETURN_GENERATED_KEYS);
+                        ResultSet rs = stmt.getGeneratedKeys();
+                        if(rs.next())
+                        {
+                            logger.info("[PRODUCT][44] Inserted New Product MailId="+mailId+" ProductId:"+rs.getLong(1));
+                            String notificationStr = ServerConstants.MESSAGE_IDS.get(messageId)+" [" + messageId + "]" + "[M:" + this.client.machineId + "]";
+                            this.client.notifyListeners("Server", notificationStr);
+                        }
+                        connection.commit();
+                        connection.setAutoCommit(true);
+                        rs.close();
+                        stmt.close();
+                        connection.close();
+                    }
+                    catch (Exception e) {
+                        logger.error(e.toString());
+                    }
+                }
+                break;
+            }
             case 49:
                 int motorCount = (int) bytesToLong(Arrays.copyOfRange(bodyBytes, 4, 8));//4,5,6,7
                 for(int i=0;i<motorCount;i++){
