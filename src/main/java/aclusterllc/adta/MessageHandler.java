@@ -697,7 +697,7 @@ public class MessageHandler {
                         if(previousProductInfo.length()>0){
                             int oldProductId=previousProductInfo.getJSONObject(0).getInt("id");
                             logger.info("[PRODUCT][44] Duplicate Product found. MailId="+mailId+" productId="+oldProductId);
-                            query+=format("INSERT INTO products_overwritten SELECT * FROM products WHERE id=%d;", oldProductId);
+                            query+=format("INSERT INTO overwritten_products SELECT * FROM products WHERE id=%d;", oldProductId);
                             query+=format("DELETE FROM products WHERE id=%d;", oldProductId);
                         }
 
