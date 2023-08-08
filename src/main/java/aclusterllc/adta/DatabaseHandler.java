@@ -33,19 +33,13 @@ public class DatabaseHandler implements Runnable {
     }
 
     public void append(JSONObject message) {
-        if (!started) {
-            throw new IllegalStateException("open() call expected before append()");
-        }
         messageList.add(message);
         this.append("ClientMessageResponse");
     }
     public void append(String sql) {
-        if (!started) {
-            throw new IllegalStateException("open() call expected before append()");
-        }
-
         try {
             queue.put(sql);
+            System.out.println("Current Queue Length: "+queue.size()+" "+messageList.size());
         } catch (InterruptedException ignored) {
             logger.error(ignored.toString());
         }

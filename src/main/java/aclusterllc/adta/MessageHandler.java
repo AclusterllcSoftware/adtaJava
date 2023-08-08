@@ -604,10 +604,11 @@ public class MessageHandler {
         if(params.has("bodyBytes")){
             bodyBytes= (byte[]) params.get("bodyBytes");
         }
+        String notificationStr = ServerConstants.MESSAGE_IDS.get(messageId)+" [" + messageId + "]" + "[M:" + this.client.machineId + "]";
         switch (messageId){
             case 11:
-            case 13:
-                if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1) {
+            case 13: {
+                if (Integer.parseInt(ServerConstants.configuration.get("threesixty_enable")) == 1) {
 
                     byte[] dataBytes = Arrays.copyOfRange(bodyBytes, 4, bodyBytes.length);
                     byte[] idBytes = Arrays.copyOfRange(dataBytes, 0, 2);
@@ -618,11 +619,13 @@ public class MessageHandler {
                     sendSingleBinStatusTo360(binId);
                 }
                 break;
-            case 12:
-                if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1) {
+            }
+            case 12: {
+                if (Integer.parseInt(ServerConstants.configuration.get("threesixty_enable")) == 1) {
                     sendAllBinStatusTo360();
                 }
                 break;
+            }
             case 20: {
                 byte[] dataBytes = Arrays.copyOfRange(bodyBytes, 4, bodyBytes.length);
                 if(dataBytes.length == 21) {
@@ -651,31 +654,28 @@ public class MessageHandler {
                                     length, width, height, weight, reject_code, productInfo.getInt("id"));
                             try {
                                 DatabaseHelper.runMultipleQuery(connection, query);
-                                logger.warn("[PRODUCT][20] Product Updated. MailId=" + mailId);
-                                String notificationStr = ServerConstants.MESSAGE_IDS.get(messageId)+" [" + messageId + "]" + "[M:" + this.client.machineId + "]";
-                                this.client.notifyListeners("Server", notificationStr);
+                                logger.info("[PRODUCT][20] Product Updated. MailId=" + mailId);
 
                             } catch (SQLException e) {
-                                logger.error(CommonHelper.getStackTraceString(e));
+                                logger.error("[PRODUCT][20] "+CommonHelper.getStackTraceString(e));
                             }
                         }
                         else {
                             logger.error("[PRODUCT][20] Product not found found. MailId=" + mailId);
                         }
+                        connection.close();
                     }
                     catch (Exception ex) {
-                        logger.error(CommonHelper.getStackTraceString(ex));
+                        logger.error("[PRODUCT][20] "+CommonHelper.getStackTraceString(ex));
                     }
-
                 }
                 else {
-                    logger.warn("[PRODUCT][20] Data Message length not 21. Length: "+dataBytes.length);
+                    logger.error("[PRODUCT][20] Data Message length not 21. Length: "+dataBytes.length);
                 }
                 break;
             }
             case 21: {
                 try {
-
                     byte[] dataBytes = Arrays.copyOfRange(bodyBytes, 4, bodyBytes.length);
                     byte[] mailIdBytes = Arrays.copyOfRange(dataBytes, 0, 4);
                     long mailId = bytesToLong(mailIdBytes);
@@ -763,12 +763,10 @@ public class MessageHandler {
                     connection.setAutoCommit(true);
                     stmt.close();
                     connection.close();
-                    logger.warn("[PRODUCT][21] Product Updated. MailId=" + mailId);
-                    String notificationStr = ServerConstants.MESSAGE_IDS.get(messageId)+" [" + messageId + "]" + "[M:" + this.client.machineId + "]";
-                    this.client.notifyListeners("Server", notificationStr);
+                    logger.info("[PRODUCT][21] Product Updated. MailId=" + mailId);
                 }
                 catch (Exception ex) {
-                    logger.error(CommonHelper.getStackTraceString(ex));
+                    logger.error("[PRODUCT][21] "+CommonHelper.getStackTraceString(ex));
                 }
                 break;
             }
@@ -809,8 +807,6 @@ public class MessageHandler {
                         if(rs.next())
                         {
                             logger.info("[PRODUCT][44] Inserted New Product MailId="+mailId+" ProductId:"+rs.getLong(1));
-                            String notificationStr = ServerConstants.MESSAGE_IDS.get(messageId)+" [" + messageId + "]" + "[M:" + this.client.machineId + "]";
-                            this.client.notifyListeners("Server", notificationStr);
                         }
                         connection.commit();
                         connection.setAutoCommit(true);
@@ -819,19 +815,20 @@ public class MessageHandler {
                         connection.close();
                     }
                     catch (Exception ex) {
-                        logger.error(CommonHelper.getStackTraceString(ex));
+                        logger.error("[PRODUCT][44] "+CommonHelper.getStackTraceString(ex));
                     }
                 }
                 break;
             }
-            case 49:
+            case 49: {
                 int motorCount = (int) bytesToLong(Arrays.copyOfRange(bodyBytes, 4, 8));//4,5,6,7
-                for(int i=0;i<motorCount;i++){
-                    DBCache.motorsCurrentSpeed.put(this.client.machineId+"_"+(i+1),(int) bytesToLong(Arrays.copyOfRange(bodyBytes, 8+i*2, 10+i*2)));
+                for (int i = 0; i < motorCount; i++) {
+                    DBCache.motorsCurrentSpeed.put(this.client.machineId + "_" + (i + 1), (int) bytesToLong(Arrays.copyOfRange(bodyBytes, 8 + i * 2, 10 + i * 2)));
                 }
                 break;
-            case 50:
-                if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1) {
+            }
+            case 50: {
+                if (Integer.parseInt(ServerConstants.configuration.get("threesixty_enable")) == 1) {
                     int state = (int) bytesToLong(Arrays.copyOfRange(bodyBytes, 4, 8));//5,6,7,8
                     int location = (int) bytesToLong(Arrays.copyOfRange(bodyBytes, 8, 12));
                     String locationName = DBCache.estop_locations.get(this.client.machineId + "" + location);
@@ -839,10 +836,10 @@ public class MessageHandler {
                     String xmlMessage = "<estop state=\"" + state + "\">" + locationName + "</estop>";
                     this.client.threeSixtyClient.sendXmlMessage(xmlMessage);
                 }
-
                 break;
-            case 51:
-                if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1) {
+            }
+            case 51: {
+                if (Integer.parseInt(ServerConstants.configuration.get("threesixty_enable")) == 1) {
                     int reason = (int) bytesToLong(Arrays.copyOfRange(bodyBytes, 4, 8));//5,6,7,8
                     ServerConstants.machineStoppedReason = reason;
                     String reasonText = ServerConstants.machine_stopped_reasons.get(reason);
@@ -850,99 +847,100 @@ public class MessageHandler {
                     this.client.threeSixtyClient.sendXmlMessage(xmlMessage);
                 }
                 break;
-            case 52:
-                if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1) {
+            }
+            case 52: {
+                if (Integer.parseInt(ServerConstants.configuration.get("threesixty_enable")) == 1) {
                     int speed = (int) bytesToLong(Arrays.copyOfRange(bodyBytes, 4, 8));//5,6,7,8
                     ServerConstants.beltStatusSpeed = speed;
                     String xmlMessage = "<belts_status unit=\"ips\">" + speed + "</belts_status>";
                     this.client.threeSixtyClient.sendXmlMessage(xmlMessage);
                 }
                 break;
-            case 55:
+            }
+            case 55: {
                 try {
                     JSONArray resultsJsonArray = new JSONArray();
                     Connection dbConn = DataSource.getConnection();
                     Statement stmt = dbConn.createStatement();
                     String query = String.format("SELECT param_id,value FROM parameters WHERE machine_id=%d", this.client.machineId);
                     ResultSet rs = stmt.executeQuery(query);
-                    while (rs.next())
-                    {
-                        JSONObject row=new JSONObject();
-                        row.put("param_id",rs.getInt("param_id"));
-                        row.put("value",rs.getInt("value"));
+                    while (rs.next()) {
+                        JSONObject row = new JSONObject();
+                        row.put("param_id", rs.getInt("param_id"));
+                        row.put("value", rs.getInt("value"));
                         resultsJsonArray.put(row);
                     }
                     rs.close();
                     stmt.close();
                     dbConn.close();
-                    for(int i=0;i<resultsJsonArray.length();i++){
-                        JSONObject row= (JSONObject) resultsJsonArray.get(i);
+                    for (int i = 0; i < resultsJsonArray.length(); i++) {
+                        JSONObject row = (JSONObject) resultsJsonArray.get(i);
                         int paramId = row.getInt("param_id");
                         int value = row.getInt("value");
-                        byte[] messageBytes= new byte[]{
-                                0, 0, 0, 115, 0, 0, 0, 20,0,0,0,0,
-                                (byte) (paramId >> 24),(byte) (paramId >> 16),(byte) (paramId >> 8),(byte) (paramId),
-                                (byte) (value >> 24),(byte) (value >> 16),(byte) (value >> 8),(byte) (value)
+                        byte[] messageBytes = new byte[]{
+                                0, 0, 0, 115, 0, 0, 0, 20, 0, 0, 0, 0,
+                                (byte) (paramId >> 24), (byte) (paramId >> 16), (byte) (paramId >> 8), (byte) (paramId),
+                                (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) (value)
                         };
                         this.client.sendBytes(messageBytes);
                     }
-                }
-                catch (Exception ex) {
+                } catch (Exception ex) {
                     logger.error(CommonHelper.getStackTraceString(ex));
                 }
                 break;
-            case 56:
+            }
+            case 56: {
                 int counterCount = (int) bytesToLong(Arrays.copyOfRange(bodyBytes, 4, 8));//4,5,6,7
-                for(int i=0;i<counterCount;i++){
-                    DBCache.countersCurrentValue.put(this.client.machineId+"_"+(i+1),(int) bytesToLong(Arrays.copyOfRange(bodyBytes, 8+i*4, 12+i*4)));
+                for (int i = 0; i < counterCount; i++) {
+                    DBCache.countersCurrentValue.put(this.client.machineId + "_" + (i + 1), (int) bytesToLong(Arrays.copyOfRange(bodyBytes, 8 + i * 4, 12 + i * 4)));
                 }
                 break;
-            case 57:
+            }
+            case 57: {
                 try {
                     byte[] dataBytes = Arrays.copyOfRange(bodyBytes, 4, bodyBytes.length);
                     String query = "UPDATE statistics_oee SET";
-                    query+=String.format(" current_state= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 0, 4)));
-                    query+=String.format(" average_tput= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 4, 8)));
-                    query+=String.format(" max_3min_tput= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 8, 12)));
-                    query+=String.format(" successful_divert_packages= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 12, 16)));
-                    query+=String.format(" packages_inducted= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 16, 20)));
-                    query+=String.format(" tot_sec_since_reset= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 20, 24)));
-                    query+=String.format(" tot_sec_estop= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 24, 28)));
-                    query+=String.format(" tot_sec_fault= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 28, 32)));
-                    query+=String.format(" tot_sec_blocked= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 32, 36)));
-                    query+=String.format(" tot_sec_idle= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 36, 40)));
-                    query+=String.format(" tot_sec_init= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 40, 44)));
-                    query+=String.format(" tot_sec_run= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 44, 48)));
-                    query+=String.format(" tot_sec_starved= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 48, 52)));
-                    query+=String.format(" tot_sec_held= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 52, 56)));
-                    query+=String.format(" tot_sec_unconstrained= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 56, 60)));
-                    query+=String.format(" last_record= %d,", dataBytes[60]);
-                    query+=" updated_at=NOW()";
-                    query+=String.format(" WHERE machine_id=%d ORDER BY id DESC LIMIT 1;", this.client.machineId);
+                    query += String.format(" current_state= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 0, 4)));
+                    query += String.format(" average_tput= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 4, 8)));
+                    query += String.format(" max_3min_tput= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 8, 12)));
+                    query += String.format(" successful_divert_packages= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 12, 16)));
+                    query += String.format(" packages_inducted= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 16, 20)));
+                    query += String.format(" tot_sec_since_reset= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 20, 24)));
+                    query += String.format(" tot_sec_estop= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 24, 28)));
+                    query += String.format(" tot_sec_fault= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 28, 32)));
+                    query += String.format(" tot_sec_blocked= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 32, 36)));
+                    query += String.format(" tot_sec_idle= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 36, 40)));
+                    query += String.format(" tot_sec_init= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 40, 44)));
+                    query += String.format(" tot_sec_run= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 44, 48)));
+                    query += String.format(" tot_sec_starved= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 48, 52)));
+                    query += String.format(" tot_sec_held= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 52, 56)));
+                    query += String.format(" tot_sec_unconstrained= %d,", (int) bytesToLong(Arrays.copyOfRange(dataBytes, 56, 60)));
+                    query += String.format(" last_record= %d,", dataBytes[60]);
+                    query += " updated_at=NOW()";
+                    query += String.format(" WHERE machine_id=%d ORDER BY id DESC LIMIT 1;", this.client.machineId);
                     Connection connection = DataSource.getConnection();
-                    DatabaseHelper.runMultipleQuery(connection,query);
+                    DatabaseHelper.runMultipleQuery(connection, query);
                     connection.close();
-                }
-                catch (Exception ex) {
+                } catch (Exception ex) {
                     logger.error(CommonHelper.getStackTraceString(ex));
                 }
                 break;
-            case 58:
+            }
+            case 58: {
                 Runtime r = Runtime.getRuntime();
-                try
-                {
+                try {
                     logger.info("Shutting down after 2 seconds.");
                     r.exec("shutdown -s -t 2");
-                }
-                catch (IOException ex) {
+                } catch (IOException ex) {
                     logger.error(CommonHelper.getStackTraceString(ex));
                 }
                 break;
+            }
             default:
                 System.out.println("Not Handled: "+messageId);
                 break;
         }
-//        String notificationStr = ServerConstants.MESSAGE_IDS.get(messageId)+" [" + messageId + "]" + "[M:" + this.client.machineId + "]";
-//        this.client.notifyListeners("Server", notificationStr);
+
+        this.client.notifyListeners("Server", notificationStr);
     }
 }
