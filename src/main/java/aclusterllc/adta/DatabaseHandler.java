@@ -54,40 +54,37 @@ public class DatabaseHandler implements Runnable {
 
     @Override
     public void run() {
-        while (!(stopped && queue.isEmpty())) {
+        while (true) {
             try {
-                String sql = queue.poll(5, TimeUnit.MICROSECONDS);
-                if (sql != null) {
-                    if(sql.equals("ClientMessageResponse")){
-                        if(messageList.size()>0){
-                            JSONObject messageObject=messageList.remove(0);
-                            Client client= (Client) messageObject.get("object");
-                            client.handleMessage(messageObject);
-                        }
+                //String sql = queue.poll(5, TimeUnit.MICROSECONDS);
+                String sql = queue.take();
+                if(sql.equals("ClientMessageResponse")){
+                    if(messageList.size()>0){
+                        JSONObject messageObject=messageList.remove(0);
+                        Client client= (Client) messageObject.get("object");
+                        client.handleMessage(messageObject);
                     }
-                    else{
-                        try {
-                            Connection dbConn= DataSource.getConnection();
-                            dbConn.setAutoCommit(false);
-                            Statement stmt = dbConn.createStatement();
-                            boolean done = stmt.execute(sql);
-                            //System.err.println(sql + "\n" + done+ "\n");
-                            dbConn.commit();
-                            dbConn.setAutoCommit(true);
-                            stmt.close();
-                            dbConn.close(); // connection close
-                        }
-                        catch (SQLException e) {
-                            logger.error(e.toString());
-                            logger.error("[SQL] "+sql);
-                            //e.printStackTrace();
-                        }
-                    }
-
                 }
-            } catch (InterruptedException e) {
-                logger.error(e.toString());
-                e.printStackTrace();
+                else{
+                    try {
+                        Connection dbConn= DataSource.getConnection();
+                        dbConn.setAutoCommit(false);
+                        Statement stmt = dbConn.createStatement();
+                        boolean done = stmt.execute(sql);
+                        //System.err.println(sql + "\n" + done+ "\n");
+                        dbConn.commit();
+                        dbConn.setAutoCommit(true);
+                        stmt.close();
+                        dbConn.close(); // connection close
+                    }
+                    catch (SQLException e) {
+                        logger.error("[SQL] "+sql);
+                        logger.error(CommonHelper.getStackTraceString(e));
+                    }
+                }
+            }
+            catch (Exception ex) {
+                logger.error(CommonHelper.getStackTraceString(ex));
             }
         }
     }
