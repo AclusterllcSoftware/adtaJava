@@ -550,7 +550,7 @@ public class MessageHandler {
 
         }
         catch (Exception ex) {
-            logger.error(ex.toString());
+            logger.error(CommonHelper.getStackTraceString(ex));
         }
     }
     public void sendAllBinStatusTo360(){
@@ -590,7 +590,7 @@ public class MessageHandler {
             }
         }
         catch (Exception ex) {
-            logger.error(ex.toString());
+            logger.error(CommonHelper.getStackTraceString(ex));
         }
     }
 
@@ -651,6 +651,7 @@ public class MessageHandler {
                                     length, width, height, weight, reject_code, productInfo.getInt("id"));
                             try {
                                 DatabaseHelper.runMultipleQuery(connection, query);
+                                logger.warn("[PRODUCT][20] Product Updated. MailId=" + mailId);
                                 String notificationStr = ServerConstants.MESSAGE_IDS.get(messageId)+" [" + messageId + "]" + "[M:" + this.client.machineId + "]";
                                 this.client.notifyListeners("Server", notificationStr);
 
@@ -659,11 +660,11 @@ public class MessageHandler {
                             }
                         }
                         else {
-                            logger.warn("[PRODUCT][20] Product not found found. MailId=" + mailId);
+                            logger.error("[PRODUCT][20] Product not found found. MailId=" + mailId);
                         }
                     }
-                    catch (Exception e) {
-                        logger.error(e.toString());
+                    catch (Exception ex) {
+                        logger.error(CommonHelper.getStackTraceString(ex));
                     }
 
                 }
@@ -673,6 +674,102 @@ public class MessageHandler {
                 break;
             }
             case 21: {
+                try {
+
+                    byte[] dataBytes = Arrays.copyOfRange(bodyBytes, 4, bodyBytes.length);
+                    byte[] mailIdBytes = Arrays.copyOfRange(dataBytes, 0, 4);
+                    long mailId = bytesToLong(mailIdBytes);
+
+                    byte[] numberOfResultsBytes = Arrays.copyOfRange(dataBytes, 4, 6);
+                    int number_of_results = (int) bytesToLong(numberOfResultsBytes);
+
+                    String queryBarcode = "";
+                    int bytePos = 6;
+                    JSONObject barCodeInfo = new JSONObject();
+                    for (int i = 1; (i < 4) && (i <= number_of_results); i++) {
+                        barCodeInfo.put("barcode" + i + "_type", dataBytes[bytePos]);
+                        queryBarcode += format("`barcode%s_type`='%s',", i, dataBytes[bytePos]);
+                        bytePos++;
+                        int barcodeLength = (int) CommonHelper.bytesToLong(Arrays.copyOfRange(dataBytes, bytePos, bytePos + 2));
+                        bytePos += 2;
+                        String barcode = new String(Arrays.copyOfRange(dataBytes, bytePos, bytePos + barcodeLength), StandardCharsets.UTF_8);
+                        //barcode = barcode.replaceAll("\\P{Print}", "");
+                        barCodeInfo.put("barcode" + i + "_string", barcode);
+                        queryBarcode += format("`barcode%s_string`='%s',", i, barcode);
+                        bytePos += barcodeLength;
+                    }
+
+                    int valid_read = 1, no_read = 0, multiple_read = 0, no_code = 0;//if number_of_results=1
+                    if (number_of_results == 1) {
+                        String barcode1_string = barCodeInfo.getString("barcode1_string");
+                        switch (barcode1_string) {
+                            case "??????????":
+                                no_read = 1;
+                                valid_read = 0;
+                                break;
+                            case "9999999999":
+                                multiple_read = 1;
+                                valid_read = 0;
+                                break;
+                            case "0000000000":
+                                no_code = 1;
+                                valid_read = 0;
+                                break;
+                        }
+                    } else {
+                        valid_read = 0;
+                        if (number_of_results == 0) {
+                            no_code = 1;
+                        } else {
+                            multiple_read = 1;
+                        }
+                    }
+
+                    Connection connection = DataSource.getConnection();
+                    JSONObject productInfo=new JSONObject();
+                    String query = "";
+                    String queryCreateNew = "";
+                    String queryCheckProduct = format("SELECT * FROM products WHERE machine_id=%d AND mail_id=%d;", this.client.machineId, mailId);
+                    JSONArray queryCheckProductResult = DatabaseHelper.getSelectQueryResults(connection, queryCheckProduct);
+
+                    if (queryCheckProductResult.length() > 0) {
+                        productInfo = queryCheckProductResult.getJSONObject(0);
+                        query += format("UPDATE products SET %s`number_of_results`='%s', `barcode_at`=now()  WHERE `id`=%d;", queryBarcode, number_of_results, productInfo.getInt("id"));
+                    }
+                    else {
+                        productInfo.put("mail_id", mailId);
+                        productInfo.put("machine_id", this.client.machineId);
+                        queryCreateNew += format("INSERT INTO products SET %s`number_of_results`='%s',`machine_id`='%s',`mail_id`='%s', `barcode_at`=now();"
+                                , queryBarcode, number_of_results, this.client.machineId, mailId);
+                        logger.warn("[PRODUCT][21] Product not found found. Creating New. MailId=" + mailId);
+                    }
+                    query += format("UPDATE statistics SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",no_read,no_code,multiple_read,valid_read,this.client.machineId);
+                    query += format("UPDATE statistics_minutely SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",no_read,no_code,multiple_read,valid_read,this.client.machineId);
+                    query += format("UPDATE statistics_hourly SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",no_read,no_code,multiple_read,valid_read,this.client.machineId);
+                    query += format("UPDATE statistics_counter SET total_read=total_read+1, no_read=no_read+%d, no_code=no_code+%d, multiple_read=multiple_read+%d, valid=valid+%d WHERE machine_id=%d ORDER BY id DESC LIMIT 1;",no_read,no_code,multiple_read,valid_read,this.client.machineId);
+                    connection.setAutoCommit(false);
+                    Statement stmt = connection.createStatement();
+                    if(queryCreateNew.length()>0){
+                        stmt.executeUpdate(queryCreateNew,Statement.RETURN_GENERATED_KEYS);
+                        ResultSet rs = stmt.getGeneratedKeys();
+                        if(rs.next())
+                        {
+                            productInfo.put("id",rs.getLong(1));
+                        }
+                        rs.close();
+                    }
+                    stmt.execute(query);
+                    connection.commit();
+                    connection.setAutoCommit(true);
+                    stmt.close();
+                    connection.close();
+                    logger.warn("[PRODUCT][21] Product Updated. MailId=" + mailId);
+                    String notificationStr = ServerConstants.MESSAGE_IDS.get(messageId)+" [" + messageId + "]" + "[M:" + this.client.machineId + "]";
+                    this.client.notifyListeners("Server", notificationStr);
+                }
+                catch (Exception ex) {
+                    logger.error(CommonHelper.getStackTraceString(ex));
+                }
                 break;
             }
             case 22: {
@@ -721,8 +818,8 @@ public class MessageHandler {
                         stmt.close();
                         connection.close();
                     }
-                    catch (Exception e) {
-                        logger.error(e.toString());
+                    catch (Exception ex) {
+                        logger.error(CommonHelper.getStackTraceString(ex));
                     }
                 }
                 break;
@@ -790,8 +887,8 @@ public class MessageHandler {
                         this.client.sendBytes(messageBytes);
                     }
                 }
-                catch (Exception e) {
-                    logger.error(e.toString());
+                catch (Exception ex) {
+                    logger.error(CommonHelper.getStackTraceString(ex));
                 }
                 break;
             case 56:
@@ -826,8 +923,8 @@ public class MessageHandler {
                     DatabaseHelper.runMultipleQuery(connection,query);
                     connection.close();
                 }
-                catch (Exception e) {
-                    logger.error(e.toString());
+                catch (Exception ex) {
+                    logger.error(CommonHelper.getStackTraceString(ex));
                 }
                 break;
             case 58:
