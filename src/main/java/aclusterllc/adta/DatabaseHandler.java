@@ -24,9 +24,8 @@ public class DatabaseHandler implements Runnable {
         logger = LoggerFactory.getLogger(DatabaseHandler.class);
         try {
             Class.forName("com.mysql.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            logger.error(e.toString());
-            //e.printStackTrace();
+        } catch (ClassNotFoundException ex) {
+            logger.error(CommonHelper.getStackTraceString(ex));
         }
         started = true;
         new Thread(this).start();
@@ -39,12 +38,10 @@ public class DatabaseHandler implements Runnable {
     public void append(String sql) {
         try {
             queue.put(sql);
-            System.out.println("Current Queue Length: "+queue.size()+" "+messageList.size());
-        } catch (InterruptedException ignored) {
-            logger.error(ignored.toString());
+        } catch (InterruptedException ex) {
+            logger.error(CommonHelper.getStackTraceString(ex));
         }
     }
-
 
     @Override
     public void run() {
