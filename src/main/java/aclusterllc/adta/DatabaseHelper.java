@@ -95,6 +95,73 @@ public class DatabaseHelper {
         String query = String.format("SELECT *,UNIX_TIMESTAMP(date_active) AS date_active_timestamp FROM active_alarms WHERE machine_id=%d ORDER BY id DESC", machineId);
         return  getSelectQueryResults(connection,query);
     }
+    public static JSONObject getAlarmsHistory(Connection connection,int machineId,JSONObject params){
+        JSONObject resultJsonObject = new JSONObject();
+//        String query = "SELECT *,UNIX_TIMESTAMP(date_active) AS date_active_timestamp,UNIX_TIMESTAMP(date_inactive) AS date_inactive_timestamp FROM active_alarms_history";
+//        String totalQuery = "SELECT COUNT(id) as totalRecords FROM active_alarms_history";
+        String query = "SELECT ah.*,UNIX_TIMESTAMP(ah.date_active) AS date_active_timestamp,UNIX_TIMESTAMP(ah.date_inactive) AS date_inactive_timestamp";
+        query+=",alarms.alarm_class,alarms.location,alarms.description,alarms.variable_name ";
+        query+="FROM active_alarms_history as ah";
+        query+=" INNER JOIN alarms ON alarms.machine_id=ah.machine_id AND alarms.alarm_id=ah.alarm_id AND alarms.alarm_type=ah.alarm_type ";
+        String totalQuery = "SELECT COUNT(ah.id) as totalRecords FROM active_alarms_history as ah INNER JOIN alarms ON alarms.machine_id=ah.machine_id AND alarms.alarm_id=ah.alarm_id AND alarms.alarm_type=ah.alarm_type ";
+
+        query+=String.format(" WHERE ah.machine_id=%d",machineId);
+        totalQuery+=String.format(" WHERE ah.machine_id=%d",machineId);
+        if(params.has("to_timestamp")){
+            query+=String.format(" AND UNIX_TIMESTAMP(date_active)<=%d",params.getInt("to_timestamp"));
+            totalQuery+=String.format(" AND UNIX_TIMESTAMP(date_active)<=%d",params.getInt("to_timestamp"));
+        }
+        if(params.has("from_timestamp")){
+            query+=String.format(" AND UNIX_TIMESTAMP(date_active)>=%d",params.getInt("from_timestamp"));
+            totalQuery+=String.format(" AND UNIX_TIMESTAMP(date_active)>=%d",params.getInt("from_timestamp"));
+        }
+        String search1="";
+        String search2="";
+        if(params.has("search1")){
+            search1=params.getString("search1");
+
+        }
+        if(params.has("search2")){
+            search2=params.getString("search2");
+
+        }
+        if((search1.length()>0) && (search2.length()>0)){
+            query+=String.format(" AND (location LIKE '%%%s%%' or description LIKE '%%%s%%' or location LIKE '%%%s%%' or description LIKE '%%%s%%' )",search1,search1,search2,search2);
+            totalQuery+=String.format(" AND (location LIKE '%%%s%%' or description LIKE '%%%s%%' or location LIKE '%%%s%%' or description LIKE '%%%s%%' )",search1,search1,search2,search2);
+        }
+        else if(search1.length()>0){
+            query+=String.format(" AND (location LIKE '%%%s%%' or description LIKE '%%%s%%')",search1,search1);
+            totalQuery+=String.format(" AND (location LIKE '%%%s%%' or description LIKE '%%%s%%')",search1,search1);
+        }
+        else if(search2.length()>0){
+            query+=String.format(" AND (location LIKE '%%%s%%' or description LIKE '%%%s%%')",search2,search2);
+            totalQuery+=String.format(" AND (location LIKE '%%%s%%' or description LIKE '%%%s%%')",search2,search2);
+        }
+        query+=" ORDER BY id DESC";
+        if(params.has("per_page")){
+            int per_page=params.getInt("per_page");
+            if(per_page>0){
+                int page=0;
+                if(params.has("page")){
+                    page=params.getInt("page");
+                }
+                if(page>0) {
+                    query += String.format(" LIMIT %d OFFSET %d", per_page, (page - 1) * per_page);
+                }
+                else{
+                    query+=String.format(" LIMIT %d",per_page);
+                }
+            }
+        }
+        query+=";";
+        totalQuery+=";";
+        JSONArray totalQueryResult=getSelectQueryResults(connection,totalQuery);
+        resultJsonObject.put("params", params);
+        resultJsonObject.put("totalRecords", totalQueryResult.getJSONObject(0).getInt("totalRecords"));
+        resultJsonObject.put("records", getSelectQueryResults(connection,query));
+        return resultJsonObject;
+
+    }
     public static JSONObject getDeviceStates(Connection connection,int machineId){
         String query = String.format("SELECT * FROM device_states WHERE machine_id=%d", machineId);
         JSONObject queryResult=getSelectQueryResults(connection,query,new String[] { "machine_id", "device_id"});

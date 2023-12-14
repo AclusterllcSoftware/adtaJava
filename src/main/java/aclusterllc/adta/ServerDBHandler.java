@@ -1701,51 +1701,6 @@ public class ServerDBHandler {
         resultJsonObject.put("totalRecords",totalRecords);
         return resultJsonObject;
     }
-    public JSONObject getAlarmsHistory(int machineId,long from_timestamp,long to_timestamp,int page,int per_page){
-        JSONObject resultJsonObject = new JSONObject();
-        long totalRecords=0;
-        JSONArray alarmsJsonArray = new JSONArray();
-        try {
-            Connection dbConn = DataSource.getConnection();
-            Statement stmt = dbConn.createStatement();
-
-
-            String totalQuery = String.format("SELECT COUNT(id) as totalRecords FROM active_alarms_history WHERE machine_id=%d AND UNIX_TIMESTAMP(date_active) BETWEEN %d AND %d", machineId,from_timestamp,to_timestamp);
-            ResultSet rs = stmt.executeQuery(totalQuery);
-            if(rs.next()){
-                totalRecords=rs.getLong("totalRecords");
-            }
-            String limitQuery="";
-            if(page>0){
-                limitQuery=String.format(" LIMIT %d OFFSET %d", per_page,(page-1)*per_page);
-            }
-            String query = String.format("SELECT *,UNIX_TIMESTAMP(date_active) AS date_active_timestamp,UNIX_TIMESTAMP(date_inactive) AS date_inactive_timestamp FROM active_alarms_history WHERE machine_id=%d AND UNIX_TIMESTAMP(date_active) BETWEEN %d AND %d ORDER BY id DESC%s", machineId,from_timestamp,to_timestamp,limitQuery);
-            rs = stmt.executeQuery(query);
-            while (rs.next())
-            {
-                JSONObject row=new JSONObject();
-                row.put("id",rs.getLong("id"));
-                row.put("machine_id",rs.getInt("machine_id"));
-                row.put("alarm_id",rs.getInt("alarm_id"));
-                row.put("alarm_type",rs.getInt("alarm_type"));
-
-                row.put("date_active",rs.getString("date_active"));
-                row.put("date_active_timestamp",rs.getLong("date_active_timestamp"));
-                row.put("date_inactive",rs.getString("date_inactive"));
-                row.put("date_inactive_timestamp",rs.getLong("date_inactive_timestamp"));
-                alarmsJsonArray.put(row);
-            }
-            rs.close();
-            stmt.close();
-            dbConn.close();
-        }
-        catch (Exception e) {
-            logger.error(e.toString());
-        }
-        resultJsonObject.put("alarms",alarmsJsonArray);
-        resultJsonObject.put("totalRecords",totalRecords);
-        return resultJsonObject;
-    }
     public JSONObject getAlarmsHitList(int machineId,long from_timestamp,long to_timestamp){
         JSONObject resultJsonObject = new JSONObject();
         try {

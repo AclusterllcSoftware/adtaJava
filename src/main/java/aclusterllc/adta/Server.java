@@ -252,6 +252,10 @@ public class Server implements Runnable {
                             responseData.put(requestFunctionName,DatabaseHelper.getActiveAlarms(connection,machine_id));
                             break;
                         }
+                        case "alarms_history": {
+                            responseData.put(requestFunctionName,DatabaseHelper.getAlarmsHistory(connection,machine_id,requestFunction.getJSONObject("params")));
+                            break;
+                        }
                         case "device_states": {
                             responseData.put(requestFunctionName,DatabaseHelper.getDeviceStates(connection,machine_id));
                             break;
@@ -618,24 +622,6 @@ public class Server implements Runnable {
                         };
                         Client client = cmClients.get(machineId);
                         client.sendBytes(messageBytes);
-                        break;
-                    }
-                    case "getAlarmsHistory": {
-                        int machineId = Integer.parseInt(jsonObject.get("machineId").toString());
-                        JSONObject params = (JSONObject) jsonObject.get("params");
-                        long from_timestamp = Long.parseLong(params.get("from_timestamp").toString());
-                        long to_timestamp = Long.parseLong(params.get("to_timestamp").toString());
-                        int page = Integer.parseInt(params.get("page").toString());
-                        int per_page = Integer.parseInt(params.get("per_page").toString());
-                        JSONObject response = new JSONObject();
-                        response.put("type", "getAlarmsHistory");
-                        response.put("machineId", machineId);
-                        response.put("page", page);
-                        response.put("per_page", per_page);
-                        JSONObject alarmsResults = serverDBHandler.getAlarmsHistory(machineId, from_timestamp, to_timestamp, page, per_page);
-                        response.put("alarms", alarmsResults.get("alarms"));
-                        response.put("totalRecords", alarmsResults.get("totalRecords"));
-                        sendMessage(clientName, response.toString());
                         break;
                     }
                     case "getAlarmsHitList": {
