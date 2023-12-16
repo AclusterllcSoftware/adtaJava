@@ -20,7 +20,6 @@ import static java.lang.String.format;
 
 public class MessageHandler {
     private DBCache dbCache = DBCache.getInstance();
-    static Connection dbConn = null;
     private final DatabaseWrapper dbWrapper;
     Logger logger = LoggerFactory.getLogger(MessageHandler.class);
     Client client;
@@ -198,92 +197,52 @@ public class MessageHandler {
 
         return joinTwoBytesArray(headerBytes, bodyBytes);
     }
-
-    public Map<Integer, String> decodeMessage(byte[] b, int machineId) throws IOException {
-        int receivedMessageLength = b.length;
-
-        Map<Integer, String> returnStr = new HashMap<>();
-
-        if(b.length < 8) {
-            System.out.println("Wrong message. Buffer Length =" + b.length + " Time=" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime()));
-            returnStr.put(0, "Wrong message");
-
-        }
-        else {
+    //  this function is for preprocess
+    //  params.put("object",this.client);
+    //  params.put("bodyBytes",bodyBytes);
+    //  params.put("messageId",messageId);
+    // params.put("messageLength",messageLength);
+    public void processMessage(JSONObject params) {
+        try {
+            //System.out.println(params);
+            int messageId = (int) params.get("messageId");
+            int messageLength = (int) params.get("messageLength");
             byte[] bodyBytes = null;
-            byte[] headerBytes = Arrays.copyOfRange(b, 0, 8);
-
-            int[] headerParts = decodeHeader(headerBytes);
-            int messageId = headerParts[0];
-            int messageLength = headerParts[1];
-            List<String> returnMsg = new ArrayList<>();
-
-            returnMsg.add(ServerConstants.MESSAGE_IDS.get(messageId));
-
-            if(messageLength > 8) {
-                bodyBytes = Arrays.copyOfRange(b, 8, messageLength);
+            if (params.has("bodyBytes")) {
+                bodyBytes = (byte[]) params.get("bodyBytes");
             }
-
+            String notificationStr =ServerConstants.MESSAGE_IDS.get(messageId)+ " [" + messageId + "]" + "[M:" + this.client.machineId + "]";
             if(bodyBytes != null) {
                 byte[] timestampBytes = Arrays.copyOfRange(bodyBytes, 0, 4);
                 long timestampLong = bytesToLong(timestampBytes);
-
                 byte[] dataBytes = Arrays.copyOfRange(bodyBytes, 4, bodyBytes.length);
                 if(messageId == 1) {
                     byte[] currentStateBytes = Arrays.copyOfRange(dataBytes, 0, 1);
                     int currentState = (int) bytesToLong(currentStateBytes);
                     byte[] currentModeBytes = Arrays.copyOfRange(dataBytes, 1, dataBytes.length);
                     int currentMode = (int) bytesToLong(currentModeBytes);
-                    returnMsg.add("State =" + ServerConstants.SYSTEM_STATES.get(currentState));
-                    returnMsg.add("Mode =" + ServerConstants.SYSTEM_MODES.get(currentMode));
-                    if (dbWrapper.updateMachineStateMode(currentState, currentMode, machineId)) {
-                        /*if(currentState == 2) {
-                            String beltStatusXML = "<belts_status unit=\"ips\">31</belts_status>";
-                            threeSixtyClient.sendMessage(5, beltStatusXML);
-                        }*/
-                        returnMsg.add("DB operations done");
-                    }
+                    notificationStr+=" State =" + ServerConstants.SYSTEM_STATES.get(currentState);
+                    notificationStr+=",Mode =" + ServerConstants.SYSTEM_MODES.get(currentMode);
+                    dbWrapper.updateMachineStateMode(currentState, currentMode, this.client.machineId);
                 }
                 else if(messageId == 45) {
                     byte[] eventIdBytes = Arrays.copyOfRange(dataBytes, 0, 4);
                     int eventId = (int) bytesToLong(eventIdBytes);
-                    String eventName = DBCache.getEventData(machineId, eventId);
+                    String eventName = DBCache.getEventData(this.client.machineId, eventId);
                     if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1){
-                        String eventXML = "<event lane=\""+ machineId +"\" type=\""+ eventName.replaceAll(" ", "_").toLowerCase() +"\">"+ eventName  + "</event>";
-                        this.client.threeSixtyClient.sendMessage(2, eventXML, 0, machineId);
+                        String eventXML = "<event lane=\""+ this.client.machineId +"\" type=\""+ eventName.replaceAll(" ", "_").toLowerCase() +"\">"+ eventName  + "</event>";
+                        this.client.threeSixtyClient.sendMessage(2, eventXML, 0, this.client.machineId);
                     }
-                    /*if (dbWrapper.processEvents(eventId, machineId)) {
-                        logger.info("Event "+ eventId +" for machine=" + machineId);
-                        returnMsg.add("DB operations done");
-                    }*/
-
-
                 }
                 else if(messageId == 48) {
                     byte[] inductIdBytes = Arrays.copyOfRange(dataBytes, 0, 4);
                     int inductId = (int) bytesToLong(inductIdBytes);
-
-                    if (dbWrapper.processPieceInducted(inductId, machineId)) {
-                        returnMsg.add("DB operations done");
-                    }
+                    dbWrapper.processPieceInducted(inductId, this.client.machineId);
                 }
                 else if(ServerConstants.INPUTS_ERRORS_JAMS_DEVICES.contains(messageId)) {
                     int[] intBitSeq = bitSequenceTranslator(dataBytes, 4);
-                    boolean dbOperationDone = false;
                     if(messageId == 2 || messageId == 14) {
-                        dbOperationDone = dbWrapper.processInputsDevicesStates(intBitSeq, messageId, machineId);
-                        //io_input_states start included by shaiful to insert into io_input_states table
-                        if(messageId==2){
-                            String query = "INSERT INTO io_input_states (`machine_id`, `input_id`, `state`,`created_at`) VALUES ";
-                            List<String> insertList = new ArrayList<>();
-                            for(int i=0;i<intBitSeq.length;i++){
-                                String insertString = format("(%d, %d, %d,CURRENT_TIMESTAMP())", machineId, i+1, intBitSeq[i]);
-                                insertList.add(insertString);
-                            }
-                            query+=(String.join(", ", insertList)+" ON DUPLICATE KEY UPDATE state=VALUES(state),created_at=VALUES(created_at)");
-                            dbHandler.append(query);
-                        }
-                        //end io_input_states
+                        dbWrapper.processInputsDevicesStates(intBitSeq, messageId, this.client.machineId);
                     }
                     else if(messageId == 4 || messageId == 5) {
                         if(Integer.parseInt(ServerConstants.configuration.get("threesixty_enable"))==1){
@@ -295,14 +254,17 @@ public class MessageHandler {
                             }
                             Map<String, String> activeAlarms = new HashMap<>();
                             try {
-                                dbConn = DataSource.getConnection();
-                                String alarmsQuery = String.format("SELECT combo_id FROM active_alarms WHERE machine_id=%d ORDER BY id DESC", machineId);
-                                Statement stmt = dbConn.createStatement();
+                                Connection dbConn2 = DataSource.getConnection();
+                                String alarmsQuery = String.format("SELECT combo_id FROM active_alarms WHERE machine_id=%d ORDER BY id DESC", this.client.machineId);
+                                Statement stmt = dbConn2.createStatement();
                                 ResultSet rs = stmt.executeQuery(alarmsQuery);
                                 while (rs.next())
                                 {
                                     activeAlarms.put(rs.getString("combo_id"),rs.getString("combo_id"));
                                 }
+                                rs.close();
+                                stmt.close();
+                                dbConn2.close();
                             }
                             catch (SQLException e) {
                                 throw new RuntimeException(e);
@@ -330,13 +292,8 @@ public class MessageHandler {
                                 }
                             }
                         }
-
-                        dbOperationDone = dbWrapper.processAlarms(intBitSeq, messageId, machineId);
+                        dbWrapper.processAlarms(intBitSeq, messageId, this.client.machineId);
                     }
-                    if(dbOperationDone) {
-                        returnMsg.add("DB operations done");
-                    }
-
                 }
                 else if(ServerConstants.MESSAGES_WITH_SIZE_TABLE.contains(messageId)) {
                     byte[] actualDataBytes = Arrays.copyOfRange(dataBytes, 4, dataBytes.length);
@@ -348,17 +305,11 @@ public class MessageHandler {
                     }
                     //for 42 and 46 it should be byte not bit seq
                     if(messageId == 42) {
-                         if (dbWrapper.processInputsDevicesStates(intByteSeq, messageId, machineId)) {
-                            returnMsg.add("DB operations done");
-                        }
+                        dbWrapper.processInputsDevicesStates(intByteSeq, messageId, this.client.machineId);
                     } else if(messageId == 46) {
-                         if (dbWrapper.processInputsDevicesStates(intByteSeq, messageId, machineId)) {
-                            returnMsg.add("DB operations done");
-                        }
+                        dbWrapper.processInputsDevicesStates(intByteSeq, messageId, this.client.machineId);
                     } else {
-                        if (dbWrapper.processBins(intBitSeq, messageId, machineId)) {
-                            returnMsg.add("DB operations done");
-                        }
+                        dbWrapper.processBins(intBitSeq, messageId, this.client.machineId);
                     }
                 }
                 else if(ServerConstants.SINGLE_STATUS_CHANGE_MESSAGES.contains(messageId)) {
@@ -370,23 +321,12 @@ public class MessageHandler {
                         int stateValue = (int) bytesToLong(stateByte);
 
                         if(messageId == 3 || messageId == 15 || messageId == 43 || messageId == 47) {
-                            if(dbWrapper.processSingleInputDeviceState(idLong, stateValue, messageId, machineId)) {
-                                returnMsg.add("DB operations done");
-                                //io_input_states start included by shaiful to insert into io_input_states table
-
-                                String query =  format("INSERT INTO io_input_states (`machine_id`, `input_id`, `state`,`created_at`) " +
-                                        "VALUES (%d, %d, %d,CURRENT_TIMESTAMP()) " +
-                                        "ON DUPLICATE KEY UPDATE state=VALUES(state),created_at=VALUES(created_at)",machineId,idLong,stateValue);
-                                dbHandler.append(query);
-                            }
+                            dbWrapper.processSingleInputDeviceState(idLong, stateValue, messageId, this.client.machineId);
                         } else {
-                            if (dbWrapper.processSingleBinState(idLong, stateValue, messageId, machineId)) {
-                                returnMsg.add("DB operations done");
-                            }
+                            dbWrapper.processSingleBinState(idLong, stateValue, messageId, this.client.machineId);
                         }
                     } else {
-                        //System.err.println("Error in single status change message. Message ID = " + messageId);
-                        logger.error("Error in single status change message. Message ID = " + messageId + " Machine ID = " + machineId);
+                        logger.error("Error in single status change message. Message ID = " + messageId + " Machine ID = " + this.client.machineId);
                     }
                 }
                 else if(messageId==53){
@@ -394,69 +334,50 @@ public class MessageHandler {
                     String query = "INSERT INTO io_output_states (`machine_id`, `output_id`, `state`,`created_at`) VALUES ";
                     List<String> insertList = new ArrayList<>();
                     for(int i=0;i<bitSeq.length;i++){
-                        String insertString = format("(%d, %d, %d,CURRENT_TIMESTAMP())", machineId, i+1, bitSeq[i]);
+                        String insertString = format("(%d, %d, %d,CURRENT_TIMESTAMP())", this.client.machineId, i+1, bitSeq[i]);
                         insertList.add(insertString);
                     }
                     query+=(String.join(", ", insertList)+" ON DUPLICATE KEY UPDATE state=VALUES(state),created_at=VALUES(created_at)");
                     dbHandler.append(query);
-
                 }
                 else if(messageId==54){
                     long paramId = bytesToLong(Arrays.copyOfRange(dataBytes, 0, 4));
                     long value = bytesToLong(Arrays.copyOfRange(dataBytes, 4, 8));
-                    String query = format("UPDATE %s SET value=%d WHERE machine_id=%d AND param_id=%d;","parameters",value,machineId,paramId);
+                    String query = format("UPDATE %s SET value=%d WHERE machine_id=%d AND param_id=%d;","parameters",value,this.client.machineId,paramId);
                     dbHandler.append(query);
                 }
-                else{
-                    returnMsg.remove(0);//to remove return message notification from textarea
 
+                else{
+                    notificationStr="";//do not show in notification area
                 }
             }
             else{
                 if(messageId == 16) {
-                   //System.out.println("Sync Response");
+                    //this.client.notifyListeners("Server",notificationStr);
                 }
                 else if(messageId == 58) {
                     //put in queue
                 }
                 else if(messageId == 30) {
-                   //System.out.println("Ping Response");
+                    this.client.pingPongCounter=0;
+                    this.client.notifyListeners("Server", "ping-rec");
+                    this.client.logger.info("Ping received from Machine-" +this.client.machineId);
+                    notificationStr="";//no need to send
                 }
             }
             List<Integer> dbWrapperPostMessages=Arrays.asList(11,12,13,20,21,22,44,49,50,51,52,55,56,57,58);
             if(dbWrapperPostMessages.contains(messageId))
             {
-                JSONObject params=new JSONObject();
-                params.put("object",this.client);
-                if(bodyBytes != null){
-                    params.put("bodyBytes",bodyBytes);
-                }
-                params.put("messageId",messageId);
                 dbHandler.append(params);
-                //params.put("messageLength",messageLength);//bodyBytes.length
             }
-
-            if(receivedMessageLength > messageLength) {
-
-                byte[] nextMessage = Arrays.copyOfRange(b, messageLength, receivedMessageLength);
-
-                Map<Integer, String> nextMsgValues = decodeMessage(nextMessage, machineId);
-                if(nextMsgValues.size() > 0) {
-                    for (Map.Entry<Integer, String> entry : nextMsgValues.entrySet()) {
-                        Integer k = entry.getKey();
-                        String v = entry.getValue();
-                        returnStr.put(k, v);
-                    }
-                }
-            }
-            if(returnMsg.size()>0){
-                returnStr.put(messageId, String.join(", ", returnMsg));
+            if(notificationStr.length()>0){
+                this.client.notifyListeners("Server",notificationStr);
             }
         }
-
-        return returnStr;
+        catch (Exception finalEx) {
+            logger.error(CommonHelper.getStackTraceString(finalEx));
+        }
     }
-
     // Char -> Decimal -> Hex
     public static String convertStringToHex(String str) {
 
@@ -620,12 +541,14 @@ public class MessageHandler {
                         int stateValue = (int) bytesToLong(stateByte);
                         sendSingleBinStatusTo360(binId);
                     }
+                    notificationStr="";//Already showing once before
                     break;
                 }
                 case 12: {
                     if (Integer.parseInt(ServerConstants.configuration.get("threesixty_enable")) == 1) {
                         sendAllBinStatusTo360();
                     }
+                    notificationStr="";//Already showing once before
                     break;
                 }
                 case 20: {
@@ -1030,7 +953,9 @@ public class MessageHandler {
                     break;
             }
             connection.close();
-            this.client.notifyListeners("Server", notificationStr);
+            if(notificationStr.length()>0){
+                this.client.notifyListeners("Server",notificationStr);
+            }
         }
         catch (SQLException finalEx) {
             logger.error(CommonHelper.getStackTraceString(finalEx));

@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -32,6 +33,7 @@ public class Client implements Runnable {
 	//private Socket socket;
 	private SocketChannel socket;
 	InetSocketAddress socketAddr;
+	byte[] previousData=new byte[0];
 	ByteBuffer buffer = ByteBuffer.allocate(10240000);
 	Selector selector;
 
@@ -40,7 +42,7 @@ public class Client implements Runnable {
 	public int machineId;
 	private final List<ClientListener> clientListeners = new ArrayList<>();
 	private final MessageHandler messageHandler;// = new MessageHandler();
-	private int pingPongCounter = 0;
+	public int pingPongCounter = 0;
 
 	Logger logger = LoggerFactory.getLogger(Client.class);
 	public ThreeSixtyClient threeSixtyClient;
@@ -222,38 +224,63 @@ public class Client implements Runnable {
 
             return;
         }
-
-
-		byte[] b = new byte[buffer.position()];
+		byte[] receivedData = new byte[buffer.position()];
 		buffer.flip();
-		buffer.get(b);
-
-		Map<Integer, String> decodedMessages = messageHandler.decodeMessage(b, machineId);
-		if(decodedMessages.size() > 0) {
-			for (Map.Entry<Integer, String> entry : decodedMessages.entrySet()) {
-
-				Integer k = entry.getKey();
-				String v = entry.getValue();
-
-				String messageName;
-				int messageId;
-				String messageIdInString;
-				String notificationStr;
-
-				messageId = k;
-				messageName = v;
-				messageIdInString = Integer.toString(messageId);
-				notificationStr = messageName + " [" + messageIdInString + "]" + "[M:" + machineId + "]";
-
-				if (messageId == 30) {
-					pingPongCounter=0;
-					notifyListeners("Server", "ping-rec");
-					logger.info("Ping received from Machine-" + machineId);
-				} else {
-					notifyListeners("Server", notificationStr);
-				}
+		buffer.get(receivedData);
+		//merging with previous data
+		JSONObject receivedJsonData=new JSONObject();
+		receivedJsonData.put("Received",receivedData);
+		if(previousData.length>0){
+			try {
+				ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+				outputStream.write(previousData);
+				outputStream.write(receivedData);
+				receivedData=outputStream.toByteArray();
+				logger.info("Merged with previous "+previousData.length+" bytes. New data length: "+receivedData.length+" bytes");
+				receivedJsonData.put("previousData",previousData);
+				receivedJsonData.put("MergedData",receivedData);
+			} catch (IOException ex) {
+				logger.info("Data Merging Error");
+				logger.error(CommonHelper.getStackTraceString(ex));
 			}
+
 		}
+		logger.info(receivedJsonData.toString());
+		//processing data
+		while (receivedData.length>7){
+			JSONObject jsonObject=new JSONObject();
+			jsonObject.put("object",this);
+
+			int messageId = CommonHelper.bytesToInt(Arrays.copyOfRange(receivedData, 0, 4));
+			int messageLength = CommonHelper.bytesToInt(Arrays.copyOfRange(receivedData, 4, 8));
+			byte[] bodyBytes = null;
+			if(messageId> 255){
+				logger.error("[INVALID_MESSAGE_ID] Resetting Buffer. messageId= "+messageId+" messageLength= "+messageLength+" DataLength= "+receivedData.length);
+				logger.error(receivedJsonData.toString());
+				receivedData=new byte[0];
+				break;
+			}
+			if(messageLength< 1){
+				logger.error("[INVALID_MESSAGE_LENGTH] Resetting Buffer. messageId= "+messageId+" messageLength= "+messageLength+" DataLength= "+receivedData.length);
+				logger.error(receivedJsonData.toString());
+				receivedData=new byte[0];
+				break;
+			}
+			if(messageLength>(receivedData.length)){
+				logger.info("[PARTIAL_BUFFER] messageId= "+messageId+" messageLength= "+messageLength+" DataLength= "+receivedData.length);
+				logger.error(receivedJsonData.toString());
+				break;
+			}
+			if(messageLength > 8) {
+				bodyBytes = Arrays.copyOfRange(receivedData, 8, messageLength);
+				jsonObject.put("bodyBytes",bodyBytes);
+			}
+			jsonObject.put("messageId",messageId);
+			jsonObject.put("messageLength",messageLength);
+			messageHandler.processMessage(jsonObject);
+			receivedData= Arrays.copyOfRange(receivedData, messageLength, receivedData.length);
+		}
+		previousData=receivedData;
 
     }
 
@@ -363,7 +390,7 @@ public class Client implements Runnable {
 
 						}
 
-						logger.info("Ping Message sent to Machine-" + machineId);
+						logger.info("Ping Message sent ("+Client.this.pingPongCounter+") to Machine-" + machineId);
 						Client.this.pingPongCounter++;
 					} catch (IOException e) {
 						logger.error(e.toString());
