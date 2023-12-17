@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ServerConstants {
+    public static boolean log_plc_messages=false;
     public static final CustomMap<Integer, String> MESSAGE_IDS = new CustomMap<>();
     public static final CustomMap<Integer, String> BIN_REJECT_CODES  = new CustomMap<>();
     public static final CustomMap<Integer, String> BARCODE_TYPES  = new CustomMap<>();

@@ -1,6 +1,5 @@
 package aclusterllc.adta;
 
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,12 +21,14 @@ public class MainGui {
     private JComboBox<ComboItem> specialMessage;
 	private JLabel feedLabel;
     public JLabel pingLabel;
+    private JCheckBox chk_log_plc_msg;
     private Client mainClient;
     private boolean alreadyConnected = false;
     Logger logger = LoggerFactory.getLogger(MainGui.class);
 
     public MainGui() {
         clearButton.addActionListener(actionEvent -> clearMainTextArea());
+        chk_log_plc_msg.addActionListener(actionPerformed-> { ServerConstants.log_plc_messages=chk_log_plc_msg.isSelected();});
     }
     public void connectClient() {
         mainClient.start();

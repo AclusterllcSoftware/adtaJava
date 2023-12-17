@@ -178,6 +178,11 @@ public class Client implements Runnable {
 	}
 
 	public void sendBytes(byte[] myByteArray, int start, int len)  {
+		if(ServerConstants.log_plc_messages){
+			JSONObject jSONObject=new JSONObject();
+			jSONObject.put("Sending",myByteArray);
+			logger.info(jSONObject.toString());
+		}
 		if (len < 1){
 			logger.error("[SEND_TO_CM] Negative length not allowed");
 		}
@@ -245,7 +250,9 @@ public class Client implements Runnable {
 			}
 
 		}
-		logger.info(receivedJsonData.toString());
+		if(ServerConstants.log_plc_messages){
+			logger.info(receivedJsonData.toString());
+		}
 		//processing data
 		while (receivedData.length>7){
 			JSONObject jsonObject=new JSONObject();
