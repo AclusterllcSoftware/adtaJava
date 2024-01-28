@@ -264,12 +264,49 @@ public class Server implements Runnable {
                             responseData.put(requestFunctionName,DatabaseHelper.getInputStates(connection,machine_id));
                             break;
                         }
+                        case "import_parameters_value": {
+                            JSONArray csvData=requestFunction.getJSONObject("params").getJSONArray("csvData");
+                            JSONObject oldParamData=DatabaseHelper.getParameterValues(connection,machine_id);
+                            int totalRowChanged=0;
+                            try {
+                                for(int tempI=0;tempI<csvData.length();tempI++){
+                                    JSONObject row=csvData.getJSONObject(tempI);
+                                    int temp_machine_id=row.getInt("machine_id");
+                                    int temp_param_id=row.getInt("param_id");
+                                    int temp_value=row.getInt("value");
+                                    if(oldParamData.has(temp_machine_id+"_"+temp_param_id)){
+                                        if(oldParamData.getJSONObject(temp_machine_id+"_"+temp_param_id).getInt("value")!= temp_value){
+                                            totalRowChanged++;
+                                            byte[] messageBytes = new byte[]{
+                                                    0, 0, 0, 115, 0, 0, 0, 20, 0, 0, 0, 0,
+                                                    (byte) (temp_param_id >> 24), (byte) (temp_param_id >> 16), (byte) (temp_param_id >> 8), (byte) (temp_param_id),
+                                                    (byte) (temp_value >> 24), (byte) (temp_value >> 16), (byte) (temp_value >> 8), (byte) (temp_value)
+                                            };
+                                            Client client = cmClients.get(machine_id);
+                                            client.sendBytes(messageBytes);
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception tex){
+                                totalRowChanged=-1;
+                                logger.error(CommonHelper.getStackTraceString(tex));
+                            }
+                            JSONObject resultJsonObject = new JSONObject();
+                            resultJsonObject.put("totalRowChanged",totalRowChanged);
+                            responseData.put(requestFunctionName,resultJsonObject);
+                            break;
+                        }
                         case "machine_mode": {
                             responseData.put(requestFunctionName,DatabaseHelper.getMachineMode(connection,machine_id));
                             break;
                         }
                         case "motors_current_speed": {
                             responseData.put(requestFunctionName,DBCache.motorsCurrentSpeed);
+                            break;
+                        }
+                        case "parameters_value": {
+                            responseData.put(requestFunctionName,DatabaseHelper.getParameterValues(connection,machine_id));
                             break;
                         }
                         case "products_history": {

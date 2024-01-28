@@ -81,11 +81,14 @@ public class MainGui {
     }
 
     public void startGui() {
-        JFrame frame = new JFrame("ADTA 1.0.30");
+        String version_Info="ADTA 1.0.31";
+        logger.info("=====================================");
+        logger.info(version_Info);
+        logger.info("=====================================");
+        JFrame frame = new JFrame(version_Info);
         if(Integer.parseInt(ServerConstants.configuration.get("java_server_minimized"))==1){
             frame.setState(Frame.ICONIFIED);
         }
-
         frame.setContentPane(this.mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();

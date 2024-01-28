@@ -183,6 +183,10 @@ public class DatabaseHelper {
         }
         return 0;
     }
+    public static JSONObject getParameterValues(Connection connection,int machineId){
+        String query = String.format("SELECT machine_id,param_id,value FROM parameters WHERE machine_id=%d", machineId);
+        return getSelectQueryResults(connection,query,new String[] { "machine_id", "param_id"});
+    }
     public static JSONObject getProductsHistory(Connection connection,int machineId,JSONObject params){
         JSONObject resultJsonObject = new JSONObject();
         String query = "SELECT *,UNIX_TIMESTAMP(created_at) AS created_at_timestamp FROM product_history";
