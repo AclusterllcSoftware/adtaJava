@@ -340,13 +340,7 @@ public class MessageHandler {
                     query+=(String.join(", ", insertList)+" ON DUPLICATE KEY UPDATE state=VALUES(state),created_at=VALUES(created_at)");
                     dbHandler.append(query);
                 }
-                else if(messageId==54){
-                    long paramId = bytesToLong(Arrays.copyOfRange(dataBytes, 0, 4));
-                    long value = bytesToLong(Arrays.copyOfRange(dataBytes, 4, 8));
-                    String query = format("UPDATE %s SET value=%d WHERE machine_id=%d AND param_id=%d;","parameters",value,this.client.machineId,paramId);
-                    CommonHelper.logParamsHistory("\""+paramId+"\";\""+value+"\";\""+value+"\"");
-                    dbHandler.append(query);
-                }
+
 
                 else{
                     notificationStr="";//do not show in notification area
@@ -366,7 +360,7 @@ public class MessageHandler {
                     notificationStr="";//no need to send
                 }
             }
-            List<Integer> dbWrapperPostMessages=Arrays.asList(11,12,13,20,21,22,44,49,50,51,52,55,56,57,58);
+            List<Integer> dbWrapperPostMessages=Arrays.asList(11,12,13,20,21,22,44,49,50,51,52,54,55,56,57,58);
             if(dbWrapperPostMessages.contains(messageId))
             {
                 dbHandler.append(params);
@@ -868,6 +862,31 @@ public class MessageHandler {
                         String xmlMessage = "<belts_status unit=\"ips\">" + speed + "</belts_status>";
                         this.client.threeSixtyClient.sendXmlMessage(xmlMessage);
                     }
+                    break;
+                }
+                case 54: {
+                    byte[] dataBytes = Arrays.copyOfRange(bodyBytes, 4, bodyBytes.length);
+                    long paramId = bytesToLong(Arrays.copyOfRange(dataBytes, 0, 4));
+                    long value = bytesToLong(Arrays.copyOfRange(dataBytes, 4, 8));
+
+
+                    String queryCheckParam = String.format("SELECT * FROM parameters WHERE machine_id=%d AND param_id=%d;", this.client.machineId, paramId);
+
+                    JSONArray queryCheckParamResult = DatabaseHelper.getSelectQueryResults(connection, queryCheckParam);
+                    if (queryCheckParamResult.length() > 0) {
+                        JSONObject paramInfo = queryCheckParamResult.getJSONObject(0);
+                        if(paramInfo.getLong("value")!=value){
+                            String query = format("UPDATE %s SET value=%d WHERE id=%d;","parameters",value,paramInfo.getLong("id"));
+                            DatabaseHelper.runMultipleQuery(connection, query);
+                            CommonHelper.logParamsHistory("\""+paramInfo.getString("description")+"\";\""+paramInfo.getLong("value")+"\";\""+value+"\"");
+                        }
+                    }
+                    else {
+                        logger.error("[PARAM][54] Parameter not found found. paramId=" + paramId);
+                    }
+
+
+                    //String query = format("UPDATE %s SET value=%d WHERE machine_id=%d AND param_id=%d;","parameters",value,this.client.machineId,paramId);
                     break;
                 }
                 case 55: {
