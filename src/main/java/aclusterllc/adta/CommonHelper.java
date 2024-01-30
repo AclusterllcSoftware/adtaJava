@@ -3,10 +3,13 @@ package aclusterllc.adta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class CommonHelper {
     static Logger logger = LoggerFactory.getLogger(CommonHelper.class);
@@ -70,5 +73,21 @@ public class CommonHelper {
         }
         return bits;
 
+    }
+    public static void logParamsHistory(String message){
+        String fileName=ServerConstants.configuration.get("params_history_location");
+        try
+        {
+            FileWriter fw = new FileWriter(fileName,true);
+            Date date = new Date();
+            SimpleDateFormat ft =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            System.out.println(ft.format(date));
+            fw.write("\""+ft.format(date)+"\";"+message+"\n");//appends the string to the file
+            fw.close();
+        }
+        catch(Exception ex)
+        {
+            logger.error(CommonHelper.getStackTraceString(ex));
+        }
     }
 }

@@ -344,6 +344,7 @@ public class MessageHandler {
                     long paramId = bytesToLong(Arrays.copyOfRange(dataBytes, 0, 4));
                     long value = bytesToLong(Arrays.copyOfRange(dataBytes, 4, 8));
                     String query = format("UPDATE %s SET value=%d WHERE machine_id=%d AND param_id=%d;","parameters",value,this.client.machineId,paramId);
+                    CommonHelper.logParamsHistory("\""+paramId+"\";\""+value+"\";\""+value+"\"");
                     dbHandler.append(query);
                 }
 

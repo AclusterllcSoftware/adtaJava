@@ -47,6 +47,7 @@ public class HydenConfigs {
 			result.put("hmi_server_ip", prop.getProperty("hmi_server_ip"));
 			result.put("hmi_server_port", prop.getProperty("hmi_server_port"));
 			result.put("java_server_minimized", prop.getProperty("java_server_minimized"));
+			result.put("params_history_location", prop.getProperty("params_history_location"));
 			result.put("db.host", prop.getProperty("db.host"));
 			result.put("db.name", prop.getProperty("db.name"));
 			result.put("db.username", prop.getProperty("db.username"));
