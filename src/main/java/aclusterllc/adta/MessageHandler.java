@@ -685,9 +685,13 @@ public class MessageHandler {
                     try {
                         byte[] dataBytes = Arrays.copyOfRange(bodyBytes, 4, bodyBytes.length);
                         long mail_id = CommonHelper.bytesToLong(Arrays.copyOfRange(dataBytes, 0, 4));
-                        int destination = (int) CommonHelper.bytesToLong(Arrays.copyOfRange(dataBytes, 4, 6));
+                        //int destination = (int) CommonHelper.bytesToLong(Arrays.copyOfRange(dataBytes, 4, 6));
+                        int destination = dataBytes[5];
+                        int destination_zone = dataBytes[4];
                         int destination_alternate = (int) CommonHelper.bytesToLong(Arrays.copyOfRange(dataBytes, 6, 8));
-                        int destination_final = (int) CommonHelper.bytesToLong(Arrays.copyOfRange(dataBytes, 8, 10));
+                        //int destination_final = (int) CommonHelper.bytesToLong(Arrays.copyOfRange(dataBytes, 8, 10));
+                        int destination_final = dataBytes[9];
+                        int final_destination_zone = dataBytes[8];
                         int reason = dataBytes[10];
 
                         JSONObject productInfo = new JSONObject();
@@ -719,8 +723,10 @@ public class MessageHandler {
                         }
 
                         productInfo.put("destination", destination);
+                        productInfo.put("destination_zone", destination_zone);
                         productInfo.put("alternate_destination", destination_alternate);
                         productInfo.put("final_destination", destination_final);
+                        productInfo.put("final_destination_zone", final_destination_zone);
                         productInfo.put("reason", reason);
                         String valueFromProductsQuery = "";
                         for (String key : productInfo.keySet()) {

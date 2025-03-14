@@ -81,7 +81,7 @@ public class MainGui {
     }
 
     public void startGui() {
-        String version_Info="ADTA 1.0.31";
+        String version_Info="ADTA 1.0.32";
         logger.info("=====================================");
         logger.info(version_Info);
         logger.info("=====================================");
